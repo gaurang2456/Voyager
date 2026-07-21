@@ -30,6 +30,6 @@ public class User {
 
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "owner")
+    @OneToMany(mappedBy = "user")
     private List<Trip> trips;
 }
