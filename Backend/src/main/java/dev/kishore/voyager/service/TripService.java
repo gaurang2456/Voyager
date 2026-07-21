@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TripService {
@@ -29,6 +31,11 @@ public class TripService {
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
     private final TripMapper tripMapper;
+    public List<TripResponse> getMyTrips() {
+        User user = getCurrentUser();
+        List<Trip> trips = tripRepository.findByUser(user);
+        return tripMapper.toResponseList(trips);
+    }
 
     public TripResponse createTrip(CreateTripRequest request) {
 

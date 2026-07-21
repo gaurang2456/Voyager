@@ -5,10 +5,9 @@ import dev.kishore.voyager.dto.response.TripResponse;
 import dev.kishore.voyager.service.TripService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/trips")
@@ -22,5 +21,12 @@ public class TripController {
             @RequestBody CreateTripRequest request
     ) {
         return ResponseEntity.ok(tripService.createTrip(request));
+    }
+    @GetMapping
+    public ResponseEntity<List<TripResponse>> getMyTrips() {
+
+        return ResponseEntity.ok(
+                tripService.getMyTrips()
+        );
     }
 }
