@@ -1,6 +1,7 @@
 package dev.kishore.voyager.controller;
 
 import dev.kishore.voyager.dto.request.CreateTripRequest;
+import dev.kishore.voyager.dto.request.UpdateTripRequest;
 import dev.kishore.voyager.dto.response.TripResponse;
 import dev.kishore.voyager.service.TripService;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,33 @@ public class TripController {
         return ResponseEntity.ok(
                 tripService.getMyTrips()
         );
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<TripResponse> getTripById(
+            @PathVariable Long id
+    ) {
+
+        return ResponseEntity.ok(
+                tripService.getTripById(id)
+        );
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TripResponse> updateTrip(
+            @PathVariable Long id,
+            @RequestBody UpdateTripRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                tripService.updateTrip(id, request)
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTrip(@PathVariable Long id) {
+
+        tripService.deleteTrip(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

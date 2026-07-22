@@ -32,6 +32,8 @@ public class Trip {
 
     private String currency;
 
+    private String description;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

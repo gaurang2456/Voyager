@@ -1,6 +1,7 @@
 package dev.kishore.voyager.service;
 
 import dev.kishore.voyager.dto.request.CreateTripRequest;
+import dev.kishore.voyager.dto.request.UpdateTripRequest;
 import dev.kishore.voyager.dto.response.TripResponse;
 import dev.kishore.voyager.entity.Trip;
 import dev.kishore.voyager.entity.User;
@@ -48,5 +49,42 @@ public class TripService {
         Trip savedTrip = tripRepository.save(trip);
 
         return tripMapper.toResponse(savedTrip);
+    }
+    public TripResponse getTripById(Long id) {
+        User user = getCurrentUser();
+        Trip trip = tripRepository
+                .findByIdAndUser(id, user)
+                .orElseThrow(() ->
+                        new RuntimeException("Trip not found"));
+
+        return tripMapper.toResponse(trip);
+    }
+
+    public TripResponse updateTrip(Long id, UpdateTripRequest request) {
+
+        User user = getCurrentUser();
+
+        Trip trip = tripRepository
+                .findByIdAndUser(id, user)
+                .orElseThrow(() ->
+                        new RuntimeException("Trip not found"));
+
+        tripMapper.updateTripFromRequest(request, trip);
+
+        Trip updatedTrip = tripRepository.save(trip);
+
+        return tripMapper.toResponse(updatedTrip);
+    }
+
+    public void deleteTrip(Long id) {
+
+        User user = getCurrentUser();
+
+        Trip trip = tripRepository
+                .findByIdAndUser(id, user)
+                .orElseThrow(() ->
+                        new RuntimeException("Trip not found"));
+
+        tripRepository.delete(trip);
     }
 }

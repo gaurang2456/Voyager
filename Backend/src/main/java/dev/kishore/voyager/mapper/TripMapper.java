@@ -2,9 +2,11 @@ package dev.kishore.voyager.mapper;
 
 import java.util.List;
 import dev.kishore.voyager.dto.request.CreateTripRequest;
+import dev.kishore.voyager.dto.request.UpdateTripRequest;
 import dev.kishore.voyager.dto.response.TripResponse;
 import dev.kishore.voyager.entity.Trip;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface TripMapper {
@@ -14,4 +16,9 @@ public interface TripMapper {
     TripResponse toResponse(Trip trip);
 
     List<TripResponse> toResponseList(List<Trip> trips);
+
+    void updateTripFromRequest(
+            UpdateTripRequest request,
+            @MappingTarget Trip trip
+    );
 }

@@ -17,4 +17,8 @@ public class CreateTripRequest {
     private BigDecimal budget;
 
     private String description;
+
+    private String title;
+
+    private String currency;
 }

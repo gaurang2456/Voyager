@@ -14,6 +14,10 @@ public class TripResponse {
 
     private String destination;
 
+    private String title;
+
+    private String currency;
+
     private LocalDate startDate;
 
     private LocalDate endDate;
