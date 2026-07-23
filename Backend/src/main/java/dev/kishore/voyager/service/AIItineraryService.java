@@ -1,88 +1,57 @@
 package dev.kishore.voyager.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.kishore.voyager.dto.ai.GeneratedItineraryDto;
+import dev.kishore.voyager.dto.weather.WeatherForecastDto;
 import dev.kishore.voyager.entity.Trip;
-import dev.kishore.voyager.entity.User;
-import dev.kishore.voyager.repository.TripRepository;
-import dev.kishore.voyager.repository.UserRepository;
+import dev.kishore.voyager.service.ai.PromptBuilder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AIItineraryService {
 
     private final ChatClient chatClient;
-    private final TripRepository tripRepository;
-    private final UserRepository userRepository;
+    private final PromptBuilder promptBuilder;
+    private final ObjectMapper objectMapper;
 
-    private User getCurrentUser() {
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
+    public GeneratedItineraryDto generateItineraryDto(Trip trip, List<WeatherForecastDto> weatherForecasts) {
+        String prompt = promptBuilder.buildPrompt(trip, weatherForecasts);
 
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    public String generateItinerary(Long tripId) {
-
-        Trip trip = tripRepository
-                .findByIdAndUser(tripId, getCurrentUser())
-                .orElseThrow(() -> new RuntimeException("Trip not found"));
-
-        String prompt = buildPrompt(trip);
-
-        return chatClient.prompt(prompt)
+        String rawContent = chatClient.prompt(prompt)
                 .call()
                 .content();
+
+        return parseResponse(rawContent);
     }
 
-    private String buildPrompt(Trip trip) {
+    private GeneratedItineraryDto parseResponse(String rawContent) {
+        if (rawContent == null || rawContent.isBlank()) {
+            throw new RuntimeException("AI returned empty content");
+        }
 
-        return """
-                You are an expert travel planner.
+        String cleanedJson = rawContent.trim();
+        if (cleanedJson.startsWith("```json")) {
+            cleanedJson = cleanedJson.substring(7);
+        } else if (cleanedJson.startsWith("```")) {
+            cleanedJson = cleanedJson.substring(3);
+        }
+        if (cleanedJson.endsWith("```")) {
+            cleanedJson = cleanedJson.substring(0, cleanedJson.length() - 3);
+        }
+        cleanedJson = cleanedJson.trim();
 
-                Create a detailed travel itinerary.
-
-                Trip Title: %s
-
-                Destination: %s
-
-                Description: %s
-
-                Start Date: %s
-
-                End Date: %s
-
-                Budget: %s %s
-
-                Return ONLY valid JSON.
-
-                Format:
-
-                {
-                  "days":[
-                    {
-                      "day":1,
-                      "activities":[
-                        "Activity 1",
-                        "Activity 2"
-                      ]
-                    }
-                  ]
-                }
-                """
-                .formatted(
-                        trip.getTitle(),
-                        trip.getDestination(),
-                        trip.getDescription(),
-                        trip.getStartDate(),
-                        trip.getEndDate(),
-                        trip.getBudget(),
-                        trip.getCurrency()
-                );
+        try {
+            return objectMapper.readValue(cleanedJson, GeneratedItineraryDto.class);
+        } catch (Exception e) {
+            log.error("Failed to parse Gemini response: {}. Raw content was: {}", e.getMessage(), rawContent);
+            throw new RuntimeException("Failed to parse AI generated itinerary response: " + e.getMessage(), e);
+        }
     }
 }

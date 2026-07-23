@@ -1,6 +1,7 @@
 package dev.kishore.voyager.controller;
 
-import dev.kishore.voyager.service.AIItineraryService;
+import dev.kishore.voyager.dto.response.ItineraryResponse;
+import dev.kishore.voyager.service.ItineraryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,17 +9,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
-
 public class AIController {
 
-    private final AIItineraryService aiItineraryService;
+    private final ItineraryService itineraryService;
 
     @PostMapping("/{tripId}/generate-itinerary")
-    public ResponseEntity<String> generateItinerary(
+    public ResponseEntity<ItineraryResponse> generateItinerary(
             @PathVariable Long tripId
     ) {
         return ResponseEntity.ok(
-                aiItineraryService.generateItinerary(tripId)
+                itineraryService.generateItinerary(tripId)
         );
     }
 }
