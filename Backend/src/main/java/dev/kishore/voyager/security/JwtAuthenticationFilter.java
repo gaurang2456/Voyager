@@ -33,21 +33,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String jwt = authHeader.substring(7);
-        String username = jwtService.extractUsername(jwt);
-        System.out.println("Username from JWT: " + username);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        if (jwtService.validateToken(jwt, userDetails)) {
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-            SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(authentication);
-            System.out.println("JWT validated successfully");
+        try {
+            String jwt = authHeader.substring(7);
+            String username = jwtService.extractUsername(jwt);
+            System.out.println("Username from JWT: " + username);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (jwtService.validateToken(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authentication);
+                    System.out.println("JWT validated successfully");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("JWT authentication failed: " + e.getMessage());
         }
         filterChain.doFilter(request, response);
     }

@@ -9,6 +9,7 @@ import dev.kishore.voyager.entity.User;
 import dev.kishore.voyager.mapper.ExpenseMapper;
 import dev.kishore.voyager.repository.ExpenseRepository;
 import dev.kishore.voyager.repository.TripRepository;
+import dev.kishore.voyager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,16 @@ public class ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final ExpenseMapper expenseMapper;
     private final TripRepository tripRepository;
+    private final UserRepository userRepository;
 
     private User getCurrentUser() {
-        return (User) SecurityContextHolder.getContext()
+        String email = SecurityContextHolder
+                .getContext()
                 .getAuthentication()
-                .getPrincipal();
+                .getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     private Trip getOwnedTrip(Long tripId) {
