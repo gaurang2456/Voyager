@@ -15,11 +15,7 @@ function getInitialTheme(): ThemeMode {
   if (saved === 'dark' || saved === 'light') {
     return saved;
   }
-  // Detect system preference
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  return 'dark'; // Default to sleek dark mode
+  return 'light'; // Default to bright, colorful travel map mode
 }
 
 function applyThemeClass(theme: ThemeMode) {

@@ -77,6 +77,29 @@ export const ActivityDetailPanel: React.FC = () => {
     >
       <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-xl rounded-2xl p-3.5 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar">
         
+        {/* Travel Hero Image Banner */}
+        {activity.imageUrl && (
+          <div className="relative w-full h-32 rounded-xl overflow-hidden shadow-xs border border-slate-200/50 dark:border-slate-800 shrink-0">
+            <img
+              src={activity.imageUrl}
+              alt={activity.title}
+              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+            <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-white text-[11px] font-bold">
+              <span className="flex items-center gap-1 drop-shadow-md">
+                <MapPin className="w-3 h-3 text-rose-400" />
+                {activity.locationName}
+              </span>
+              {activity.rating && (
+                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700 text-amber-400 text-[10px]">
+                  <Star className="w-3 h-3 fill-amber-400" /> {activity.rating}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Header Row: Title & Close */}
         <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2">
           <div>

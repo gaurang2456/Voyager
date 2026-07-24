@@ -45,6 +45,7 @@ export interface Trip {
   spentBudget: number;
   weather: WeatherInfo;
   days: DayItinerary[];
+  personalityTags?: string[];
 }
 
 export interface AICommand {

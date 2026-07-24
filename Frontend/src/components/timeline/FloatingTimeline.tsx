@@ -82,38 +82,8 @@ export const FloatingTimeline: React.FC = () => {
         ))}
       </div>
 
-      {/* Compact "Today's Journey" Summary Card */}
-      <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-md rounded-2xl p-2.5 flex flex-col gap-1.5 text-slate-800 dark:text-slate-100">
-        <div className="flex items-center justify-between text-[11px] font-extrabold text-blue-600 dark:text-blue-400">
-          <span className="flex items-center gap-1">
-            <Compass className="w-3.5 h-3.5" />
-            Today's Journey
-          </span>
-          <span className="text-[10px] text-slate-400 font-normal">{timeSpan}</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-1 text-[10px]">
-          <div className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-            <span>Activities: <strong className="text-slate-900 dark:text-white">{activities.length}</strong></span>
-          </div>
-          <div className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span>Distance: <strong className="text-slate-900 dark:text-white">{routeDistance || 4.2} km</strong></span>
-          </div>
-          <div className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
-            <span>Est. Cost: <strong className="text-slate-900 dark:text-white">${totalCost}</strong></span>
-          </div>
-          <div className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-            <span>Weather: <strong className="text-slate-900 dark:text-white truncate">{currentTrip.weather.condition}</strong></span>
-          </div>
-        </div>
-      </div>
-
       {/* Vertical Timeline Container */}
-      <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-xl rounded-2xl p-2.5 max-h-[calc(100vh-310px)] overflow-y-auto custom-scrollbar transition-all duration-300">
+      <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-xl rounded-2xl p-2.5 max-h-[calc(100vh-160px)] overflow-y-auto custom-scrollbar transition-all duration-300">
         
         <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">

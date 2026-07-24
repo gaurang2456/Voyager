@@ -9,11 +9,12 @@ const initialTrips: Trip[] = [
     dates: 'Oct 12 – Oct 18, 2026',
     totalBudget: 2000,
     spentBudget: 580,
+    personalityTags: ['🍂 Autumn Season', '☀️ Sunny', '🍜 Peak Food Season'],
     weather: {
       temperature: '22°C',
       condition: 'Partly Cloudy',
       rainProbability: '15% Rain',
-      aiRecommendation: 'Outdoor itinerary retained due to clear weather. Strolls scheduled during mild afternoon.',
+      aiRecommendation: 'Great conditions for outdoor walk. Light jacket recommended for evening.',
       icon: 'partly-cloudy',
     },
     days: [
@@ -38,6 +39,7 @@ const initialTrips: Trip[] = [
             status: 'completed',
             durationMinutes: 90,
             rating: 4.8,
+            imageUrl: 'https://images.unsplash.com/photo-1583833420842-88f11816e87f?auto=format&fit=crop&w=600&q=80',
           },
           {
             id: 'act-2',
@@ -55,6 +57,7 @@ const initialTrips: Trip[] = [
             status: 'current',
             durationMinutes: 60,
             rating: 4.7,
+            imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80',
           },
           {
             id: 'act-3',
@@ -72,6 +75,7 @@ const initialTrips: Trip[] = [
             status: 'upcoming',
             durationMinutes: 120,
             rating: 4.6,
+            imageUrl: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=600&q=80',
           },
           {
             id: 'act-4',
@@ -89,6 +93,7 @@ const initialTrips: Trip[] = [
             status: 'upcoming',
             durationMinutes: 45,
             rating: 4.5,
+            imageUrl: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
           },
         ],
       },
@@ -113,6 +118,7 @@ const initialTrips: Trip[] = [
             durationMinutes: 100,
             rating: 4.9,
             locationName: 'Asakusa, Taito',
+            imageUrl: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=600&q=80',
           },
           {
             id: 'act-6',
@@ -130,6 +136,7 @@ const initialTrips: Trip[] = [
             durationMinutes: 75,
             rating: 4.6,
             locationName: 'Asakusa',
+            imageUrl: 'https://images.unsplash.com/photo-1617093727343-374698b1b08d?auto=format&fit=crop&w=600&q=80',
           },
           {
             id: 'act-7',
@@ -147,6 +154,7 @@ const initialTrips: Trip[] = [
             durationMinutes: 120,
             rating: 4.8,
             locationName: 'Oshiage, Sumida',
+            imageUrl: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
           },
         ],
       },
@@ -171,6 +179,7 @@ const initialTrips: Trip[] = [
             durationMinutes: 150,
             rating: 4.9,
             locationName: 'Toyosu, Koto',
+            imageUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
           },
           {
             id: 'act-9',
@@ -188,6 +197,7 @@ const initialTrips: Trip[] = [
             durationMinutes: 90,
             rating: 4.9,
             locationName: 'Toyosu Market',
+            imageUrl: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80',
           },
         ],
       },
@@ -200,11 +210,12 @@ const initialTrips: Trip[] = [
     dates: 'Nov 04 – Nov 10, 2026',
     totalBudget: 2800,
     spentBudget: 940,
+    personalityTags: ['🌸 Spring Vibe', '☕ Cafe Culture', '☀️ Mild Breeze'],
     weather: {
       temperature: '16°C',
       condition: 'Mild Breeze',
       rainProbability: '5% Rain',
-      aiRecommendation: 'Rain expected after 3 PM. Indoor attractions and museums moved to the afternoon.',
+      aiRecommendation: 'Crisp autumn weather perfect for Seine riverside walks & cafes.',
       icon: 'sunny',
     },
     days: [
@@ -229,6 +240,7 @@ const initialTrips: Trip[] = [
             durationMinutes: 180,
             rating: 4.9,
             locationName: '1st Arrondissement, Paris',
+            imageUrl: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=600&q=80',
           },
           {
             id: 'p-2',
@@ -246,6 +258,7 @@ const initialTrips: Trip[] = [
             durationMinutes: 75,
             rating: 4.6,
             locationName: 'Saint-Germain-des-Prés',
+            imageUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80',
           },
         ],
       },

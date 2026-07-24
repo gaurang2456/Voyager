@@ -6,6 +6,7 @@ import { RegisterPage } from './components/auth/RegisterPage';
 import { MapView } from './components/map/MapView';
 import { TopNavbar } from './components/layout/TopNavbar';
 import { WeatherCard } from './components/weather/WeatherCard';
+import { AIInsightCard } from './components/weather/AIInsightCard';
 import { FloatingTimeline } from './components/timeline/FloatingTimeline';
 import { ActivityDetailPanel } from './components/panel/ActivityDetailPanel';
 import { AICommandBar } from './components/ai/AICommandBar';
@@ -51,6 +52,9 @@ export function App() {
 
       {/* 3. Compact Weather Card Overlay at Top */}
       <WeatherCard />
+
+      {/* 3b. Dedicated Floating AI Insight Card */}
+      <AIInsightCard />
 
       {/* 4. Thin Floating Vertical Timeline on Left */}
       <FloatingTimeline />
