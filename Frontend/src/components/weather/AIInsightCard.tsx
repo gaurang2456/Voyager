@@ -18,22 +18,22 @@ export const AIInsightCard: React.FC = () => {
 
   return (
     <div className="absolute top-24 left-1/2 -translate-x-1/2 z-30 pointer-events-auto transition-all duration-300 animate-fadeIn">
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-purple-500/20 dark:border-purple-500/30 shadow-md shadow-purple-500/5 rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-100 max-w-sm sm:max-w-md">
-        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold text-[10px] shrink-0 border border-purple-500/20">
-          <Brain className="w-3 h-3 text-purple-500" />
-          <span>AI Insight</span>
+      <div className="bg-[#FAF8F3] backdrop-blur-2xl border border-[#EFE8DD] shadow-md shadow-amber-950/5 rounded-full px-4 py-1.5 flex items-center gap-2.5 text-xs text-[#2F2A24] max-w-sm sm:max-w-md">
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#8E2A59]/15 text-[#8E2A59] font-bold text-[10px] shrink-0 border border-[#8E2A59]/30">
+          <Sparkles className="w-3 h-3 text-[#8E2A59] fill-[#8E2A59]" />
+          <span>Concierge Recommendation</span>
         </div>
 
-        <span className="text-[11px] font-medium text-slate-700 dark:text-slate-200 truncate" title={weather.aiRecommendation}>
+        <span className="text-xs font-semibold text-[#2F2A24] truncate" title={weather.aiRecommendation}>
           {weather.aiRecommendation}
         </span>
 
         <button
           onClick={() => setIsDismissed(true)}
-          aria-label="Dismiss AI Insight"
-          className="p-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer shrink-0 ml-0.5"
+          aria-label="Dismiss Concierge Recommendation"
+          className="p-1 rounded-full hover:bg-[#F1EDE4] text-[#6E665C] hover:text-[#2F2A24] transition-colors cursor-pointer shrink-0 ml-0.5"
         >
-          <X className="w-3 h-3" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

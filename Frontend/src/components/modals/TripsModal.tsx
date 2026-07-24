@@ -13,16 +13,16 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fadeIn">
-      <div className="w-full max-w-lg bg-white/95 dark:bg-slate-900/95 border border-white/40 dark:border-slate-800 rounded-3xl shadow-2xl p-6 text-slate-800 dark:text-slate-100">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1E1B18]/40 backdrop-blur-md animate-fadeIn">
+      <div className="w-full max-w-lg bg-[#FAF8F3] border border-[#E8E2D5] rounded-3xl shadow-2xl p-6 text-[#2F2A24]">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D5]">
           <div className="flex items-center gap-2">
-            <Luggage className="w-5 h-5 text-blue-500" />
-            <h2 className="text-lg font-extrabold tracking-tight">My Saved Journeys</h2>
+            <Luggage className="w-5 h-5 text-[#C19A6B]" />
+            <h2 className="font-serif-luxury text-lg font-bold tracking-tight text-[#2F2A24]">My Saved Journeys</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-1.5 rounded-full hover:bg-[#EFE8DD] text-[#6E665C] hover:text-[#2F2A24] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -41,7 +41,7 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
                 className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                   isActive
                     ? 'bg-blue-500/10 border-blue-500/30 shadow-sm'
-                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                    : 'bg-[#F3EFE8] border-[#E8E2D5] hover:border-stone-400'
                 }`}
               >
                 <div>

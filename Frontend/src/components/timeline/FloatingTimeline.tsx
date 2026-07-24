@@ -7,13 +7,13 @@ import type { ActivityCategory } from '../../types/travel';
 const getCategoryColorDot = (category: ActivityCategory) => {
   switch (category) {
     case 'sightseeing':
-      return 'border-blue-500 text-blue-600';
+      return 'border-[#C19A6B] text-[#C19A6B]';
     case 'food':
-      return 'border-emerald-500 text-emerald-600';
+      return 'border-[#708238] text-[#556B2F]';
     case 'shopping':
-      return 'border-sky-500 text-sky-600';
+      return 'border-[#8E2A59] text-[#8E2A59]';
     case 'hotel':
-      return 'border-amber-500 text-amber-600';
+      return 'border-[#D97724] text-[#D97724]';
   }
 };
 
@@ -66,15 +66,15 @@ export const FloatingTimeline: React.FC = () => {
     <div className="absolute top-16 left-4 md:top-28 md:left-5 z-30 flex flex-col gap-2 pointer-events-auto max-w-[185px] sm:max-w-[215px] transition-all">
       
       {/* Day Selector Pill Bar */}
-      <div className="flex items-center gap-1 p-1 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-md shadow-slate-900/5">
+      <div className="flex items-center gap-1 p-1 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5">
         {currentTrip.days.map((day) => (
           <button
             key={day.dayNumber}
             onClick={() => setActiveDay(day.dayNumber)}
             className={`flex-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
               day.dayNumber === activeDayNumber
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs scale-105'
-                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-[#4A443D] text-white shadow-xs scale-105 border border-[#5C5346]'
+                : 'text-[#6E665C] hover:bg-[#EFE8DD]'
             }`}
           >
             Day {day.dayNumber}
@@ -83,19 +83,19 @@ export const FloatingTimeline: React.FC = () => {
       </div>
 
       {/* Vertical Timeline Container */}
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-900/5 rounded-2xl p-2.5 max-h-[calc(100vh-160px)] overflow-y-auto custom-scrollbar transition-all duration-300">
+      <div className="bg-[#FAF8F3] backdrop-blur-2xl border border-[#EFE8DD] shadow-lg shadow-amber-950/5 rounded-2xl p-3 max-h-[calc(100vh-160px)] overflow-y-auto custom-scrollbar transition-all duration-300">
         
-        <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">
-            <Clock className="w-3 h-3 text-blue-500" />
-            <span>Timeline Path</span>
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E8E2D6]">
+          <div className="flex items-center gap-1.5 font-serif-luxury text-xs font-bold text-[#2F2A24]">
+            <Clock className="w-3.5 h-3.5 text-[#C19A6B]" />
+            <span>Itinerary Route</span>
           </div>
         </div>
 
         {/* Vertical Nodes */}
         <div className="relative flex flex-col gap-2.5 my-1">
           {/* Vertical Connecting Line */}
-          <div className="absolute left-[11px] top-3 bottom-3 w-[2px] bg-slate-200 dark:bg-slate-800 z-0" />
+          <div className="absolute left-[11px] top-3 bottom-3 w-[2px] bg-[#E8E2D6] z-0" />
 
           {activities.map((act, index) => {
             const isSelected = act.id === selectedActivityId;
@@ -110,26 +110,28 @@ export const FloatingTimeline: React.FC = () => {
                   onClick={() => setSelectedActivity(act.id)}
                   onMouseEnter={() => setHoveredActivity(act.id)}
                   onMouseLeave={() => setHoveredActivity(null)}
-                  className={`group relative z-10 flex items-start gap-2 p-1.5 rounded-xl text-left transition-all duration-200 cursor-pointer ${
-                    isSelected
-                      ? 'bg-blue-500/15 dark:bg-blue-500/25 border border-blue-500/40 shadow-xs ring-1 ring-blue-500/30'
+                  className={`group relative z-10 flex items-start gap-2.5 p-2 rounded-xl text-left transition-all duration-200 cursor-pointer ${
+                    isSelected || isCurrent
+                      ? 'bg-[#4A443D]/10 border border-[#4A443D] shadow-xs ring-1 ring-[#5C5346]/30'
+                      : isCompleted
+                      ? 'bg-[#FAF8F3]/60 border border-[#E8E2D6] opacity-85 hover:opacity-100'
                       : isHovered
-                      ? 'bg-slate-100/90 dark:bg-slate-800/90 scale-[1.02]'
-                      : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                      ? 'bg-[#F3EFE6] scale-[1.02]'
+                      : 'bg-[#F8F5EF]/60 border border-[#E8E2D6]/80 hover:bg-[#F3EFE6]'
                   }`}
                 >
                   {/* Progress Marker Indicator */}
                   <div className="relative mt-0.5 shrink-0">
                     {isCompleted ? (
-                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                      <div className="w-5 h-5 rounded-full bg-[#5FAF8D] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     ) : isCurrent ? (
-                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white font-extrabold text-[10px] shadow-md ring-2 ring-blue-500/40 animate-pulse">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full bg-[#4A443D] text-white font-extrabold text-[10px] shadow-md ring-2 ring-[#5C5346]/40 animate-pulse">
                         {act.order}
                       </div>
                     ) : (
-                      <div className={`w-5 h-5 rounded-full bg-white dark:bg-slate-900 border-2 ${categoryBorder} flex items-center justify-center text-[10px] font-bold shadow-xs`}>
+                      <div className={`w-5 h-5 rounded-full bg-[#FAF8F3] border-2 ${categoryBorder} flex items-center justify-center text-[10px] font-bold text-[#2F2A24] shadow-xs`}>
                         {act.order}
                       </div>
                     )}
@@ -137,12 +139,12 @@ export const FloatingTimeline: React.FC = () => {
 
                   {/* Details: Time & Title */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-semibold text-slate-400 leading-none">
+                    <div className={`text-[10px] font-bold leading-none ${
+                      isCurrent || isSelected ? 'text-[#4A443D]' : 'text-[#6E665C]'
+                    }`}>
                       {act.time}
                     </div>
-                    <p className={`text-[11px] font-bold truncate leading-tight mt-0.5 ${
-                      isCompleted ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-800 dark:text-slate-100'
-                    }`}>
+                    <p className="text-xs font-bold text-[#2F2A24] truncate leading-snug mt-0.5">
                       {act.title}
                     </p>
                   </div>

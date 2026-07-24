@@ -18,13 +18,13 @@ import type { ActivityCategory } from '../../types/travel';
 const getCategoryStyles = (category: ActivityCategory) => {
   switch (category) {
     case 'sightseeing':
-      return { bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200/60 dark:border-blue-800/60' };
+      return { bg: 'bg-[#C19A6B]/15', text: 'text-[#A88254]', border: 'border-[#C19A6B]/30' };
     case 'food':
-      return { bg: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200/60 dark:border-emerald-800/60' };
+      return { bg: 'bg-[#708238]/15', text: 'text-[#556B2F]', border: 'border-[#708238]/30' };
     case 'shopping':
-      return { bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200/60 dark:border-purple-800/60' };
+      return { bg: 'bg-[#8E2A59]/15', text: 'text-[#8E2A59]', border: 'border-[#8E2A59]/30' };
     case 'hotel':
-      return { bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200/60 dark:border-amber-800/60' };
+      return { bg: 'bg-[#D97724]/15', text: 'text-[#D97724]', border: 'border-[#D97724]/30' };
   }
 };
 
@@ -74,24 +74,24 @@ export const ActivityDetailPanel: React.FC = () => {
       onMouseLeave={() => setHoveredActivity(null)}
       className="absolute bottom-20 left-4 right-4 top-auto w-auto max-w-none md:top-16 md:right-5 md:left-auto md:w-72 md:max-w-[288px] md:bottom-auto z-40 pointer-events-auto transition-all duration-300 animate-fadeIn"
     >
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-xl shadow-slate-900/10 rounded-3xl p-3.5 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar">
+      <div className="bg-[#FAF8F3] backdrop-blur-2xl border border-[#EFE8DD] shadow-xl shadow-amber-950/10 rounded-3xl p-3.5 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar">
         
         {/* Travel Hero Image Banner */}
         {activity.imageUrl && (
-          <div className="relative w-full h-44 rounded-xl overflow-hidden shadow-xs border border-slate-200/50 dark:border-slate-800 shrink-0">
+          <div className="relative w-full h-44 rounded-2xl overflow-hidden shadow-xs border border-[#EFE8DD] shrink-0">
             <img
               src={activity.imageUrl}
               alt={activity.title}
               className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-            <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-white text-[11px] font-bold">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#2F2A24]/85 via-transparent to-transparent" />
+            <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px] font-bold">
               <span className="flex items-center gap-1 drop-shadow-md">
                 <MapPin className="w-3 h-3 text-rose-400" />
                 {activity.locationName}
               </span>
               {activity.rating && (
-                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700 text-amber-400 text-[10px]">
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#4A443D]/90 backdrop-blur-md border border-[#5C5346] text-amber-400 text-[10px]">
                   <Star className="w-3 h-3 fill-amber-400" /> {activity.rating}
                 </span>
               )}
@@ -100,11 +100,11 @@ export const ActivityDetailPanel: React.FC = () => {
         )}
 
         {/* Header Row: Title & Close */}
-        <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2">
+        <div className="flex items-start justify-between gap-2 border-b border-[#E8E2D6] pb-2">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               {isCompleted && (
-                <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#5FAF8D]/15 text-[#4F9F7F] border border-[#5FAF8D]/30">
                   <CheckCircle2 className="w-3 h-3" /> Done
                 </span>
               )}
@@ -112,114 +112,114 @@ export const ActivityDetailPanel: React.FC = () => {
                 {activity.category}
               </span>
               {activity.priority === 'high' && (
-                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/10 text-[#FF7A59] border border-rose-500/20">
                   High
                 </span>
               )}
             </div>
-            <h2 className={`text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug ${isSkipped ? 'line-through opacity-50' : ''}`}>
+            <h2 className={`font-serif-luxury text-base font-bold text-[#2F2A24] leading-snug ${isSkipped ? 'line-through opacity-50' : ''}`}>
               {activity.title}
             </h2>
           </div>
 
           <button
             onClick={() => setPanelOpen(false)}
-            className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer shrink-0"
+            className="p-1 rounded-lg hover:bg-[#F1EDE4] text-[#6E665C] hover:text-[#2F2A24] transition-colors cursor-pointer shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Time, Duration & Rating */}
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <div className="flex items-center justify-between text-xs text-[#6E665C] font-medium">
           <div className="flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5 text-blue-500" />
+            <Clock className="w-3.5 h-3.5 text-[#C19A6B]" />
             <span>{activity.time} • {activity.durationMinutes}m</span>
           </div>
           {activity.rating && (
-            <div className="flex items-center gap-1 text-amber-500 font-bold">
+            <div className="flex items-center gap-1 text-amber-700 font-bold">
               <Star className="w-3.5 h-3.5 fill-amber-500" />
               <span>{activity.rating}</span>
             </div>
           )}
         </div>
 
-        {/* Location & Cost Row */}
+        {/* Location & Cost Row — Crisp White Information Cards */}
         <div className="grid grid-cols-2 gap-1.5 text-xs">
-          <div className="p-1.5 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-            <div className="text-[10px] text-slate-400 font-medium">Location</div>
-            <div className="font-bold text-slate-800 dark:text-slate-200 truncate mt-0.5 text-[11px]" title={activity.locationName}>
+          <div className="p-2 rounded-xl bg-white border border-[#EFE8DD] shadow-2xs">
+            <div className="text-[10px] text-[#A59E93] font-medium">Location</div>
+            <div className="font-bold text-[#2F2A24] truncate mt-0.5 text-[11px]" title={activity.locationName}>
               {activity.locationName}
             </div>
           </div>
 
-          <div className="p-1.5 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-            <div className="text-[10px] text-slate-400 font-medium">Est. Cost</div>
-            <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 text-[11px]">
+          <div className="p-2 rounded-xl bg-white border border-[#EFE8DD] shadow-2xs">
+            <div className="text-[10px] text-[#A59E93] font-medium">Est. Cost</div>
+            <div className="font-bold text-[#2F2A24] mt-0.5 text-[11px]">
               {activity.estimatedCost === 0 ? 'Free' : `$${activity.estimatedCost}`}
             </div>
           </div>
         </div>
 
         {/* Short Description */}
-        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+        <p className="text-xs text-[#6E665C] leading-relaxed font-normal">
           {activity.description}
         </p>
 
-        {/* Weather Suitability Recommendation Pill */}
-        <div className="flex items-center gap-2 p-1.5 rounded-xl bg-blue-500/8 dark:bg-blue-950/30 border border-blue-500/15 text-xs text-blue-700 dark:text-blue-300 font-medium">
-          <Sparkles className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+        {/* Weather Suitability Recommendation Pill - Oyster Color */}
+        <div className="flex items-center gap-2 p-2 rounded-xl bg-[#EAE3D9] border border-[#D4C9BD] text-xs text-[#4A443D] font-medium">
+          <Sparkles className="w-3.5 h-3.5 text-[#9E9486] shrink-0" />
           <span className="text-[11px] leading-tight">{activity.weatherSuitability}</span>
         </div>
 
         {/* Extra Details Collapsible */}
         {showMoreDetails && (
-          <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 space-y-1.5 animate-fadeIn">
+          <div className="pt-1.5 border-t border-[#E8E2D5] text-[11px] text-[#6E665C] space-y-1.5 animate-fadeIn">
             <div className="flex justify-between">
               <span>Peak Hours</span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">11:00 AM – 3:00 PM</span>
+              <span className="font-semibold text-[#2F2A24]">11:00 AM – 3:00 PM</span>
             </div>
             <div className="flex justify-between">
               <span>Accessibility</span>
-              <span className="font-semibold text-emerald-600">Wheelchair Accessible</span>
+              <span className="font-semibold text-emerald-700">Wheelchair Accessible</span>
             </div>
           </div>
         )}
 
-        {/* In-App Navigation Active Overlay Panel */}
+        {/* In-App Navigation Active Overlay Panel - Oyster & Camel */}
         {isNavigating ? (
-          <div className="p-2.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex flex-col gap-2 text-xs animate-fadeIn">
-            <div className="flex items-center justify-between font-bold text-blue-600 dark:text-blue-400">
+          <div className="p-2.5 rounded-xl bg-[#EAE3D9] border border-[#D4C9BD] flex flex-col gap-2 text-xs animate-fadeIn">
+            <div className="flex items-center justify-between font-bold text-[#4A443D]">
               <span className="flex items-center gap-1">
-                <Navigation className="w-3.5 h-3.5 animate-pulse" />
+                <Navigation className="w-3.5 h-3.5 text-[#C19A6B] animate-pulse" />
                 Active Route Navigation
               </span>
               <button
                 onClick={() => setIsNavigating(false)}
-                className="text-[10px] text-slate-400 hover:text-slate-200"
+                className="text-[10px] text-[#6E665C] hover:text-[#2F2A24]"
               >
                 Close
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-1 text-center py-1 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-blue-500/10">
+            <div className="grid grid-cols-3 gap-1 text-center py-1 bg-white/80 rounded-lg border border-[#D4C9BD]">
               <div>
-                <div className="text-[9px] text-slate-400 font-bold uppercase">Walking</div>
-                <div className="font-extrabold text-slate-900 dark:text-white text-xs">12 min</div>
+                <div className="text-[9px] text-[#6E665C] font-bold uppercase">Walking</div>
+                <div className="font-extrabold text-[#2F2A24] text-xs">12 min</div>
               </div>
               <div>
-                <div className="text-[9px] text-slate-400 font-bold uppercase">Distance</div>
-                <div className="font-extrabold text-slate-900 dark:text-white text-xs">0.9 km</div>
+                <div className="text-[9px] text-[#6E665C] font-bold uppercase">Distance</div>
+                <div className="font-extrabold text-[#2F2A24] text-xs">0.9 km</div>
               </div>
               <div>
-                <div className="text-[9px] text-slate-400 font-bold uppercase">Arrival</div>
-                <div className="font-extrabold text-emerald-600 dark:text-emerald-400 text-xs">12:42 PM</div>
+                <div className="text-[9px] text-[#6E665C] font-bold uppercase">Arrival</div>
+                <div className="font-extrabold text-[#5FAF8D] text-xs">12:42 PM</div>
               </div>
             </div>
 
             <button
               onClick={handleLaunchExternalMap}
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-[#C19A6B] hover:bg-[#A88254] text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
             >
               <span>Launch Directions in Maps</span>
               <ExternalLink className="w-3 h-3 opacity-80" />
@@ -227,10 +227,10 @@ export const ActivityDetailPanel: React.FC = () => {
           </div>
         ) : (
           /* Action Buttons Section Directly Below Content */
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1.5">
+          <div className="pt-2 border-t border-[#E8E2D6] flex flex-col gap-1.5">
             <button
               onClick={() => setIsNavigating(true)}
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-[#C19A6B] hover:bg-[#A88254] active:scale-98 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
             >
               <Navigation className="w-3.5 h-3.5" />
               <span>Navigate in Maps</span>
@@ -241,7 +241,7 @@ export const ActivityDetailPanel: React.FC = () => {
             <button
               onClick={handleReplace}
               disabled={isReplacing}
-              className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 active:scale-98 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold transition-all cursor-pointer"
+              className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-[#F3EFE8] hover:bg-[#E6DEC9] active:scale-98 text-[#2F2A24] border border-[#E8E2D5] text-xs font-semibold transition-all cursor-pointer"
             >
               <RefreshCw className={`w-3 h-3 ${isReplacing ? 'animate-spin' : ''}`} />
               <span>Replace</span>
@@ -251,8 +251,8 @@ export const ActivityDetailPanel: React.FC = () => {
               onClick={() => skipActivity(activity.id)}
               className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border text-xs font-semibold active:scale-98 transition-all cursor-pointer ${
                 isSkipped
-                  ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                  ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
+                  : 'bg-[#F3EFE8] hover:bg-[#E6DEC9] text-[#2F2A24] border-[#E8E2D5]'
               }`}
             >
               <SkipForward className="w-3 h-3" />
@@ -262,7 +262,7 @@ export const ActivityDetailPanel: React.FC = () => {
 
           <button
             onClick={() => setShowMoreDetails(!showMoreDetails)}
-            className="w-full flex items-center justify-center gap-1 py-0.5 text-[11px] font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-1 py-0.5 text-[11px] font-medium text-[#6E665C] hover:text-[#2F2A24] transition-colors cursor-pointer"
           >
             <Info className="w-3 h-3" />
             <span>{showMoreDetails ? 'Less Info' : 'More Details'}</span>

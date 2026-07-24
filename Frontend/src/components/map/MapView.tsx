@@ -9,13 +9,13 @@ import type { ActivityCategory, Activity } from '../../types/travel';
 const getCategoryColor = (category: ActivityCategory) => {
   switch (category) {
     case 'sightseeing':
-      return { bg: '#2563eb', text: '#ffffff' };
+      return { bg: '#C19A6B', text: '#ffffff' };
     case 'food':
-      return { bg: '#10b981', text: '#ffffff' };
+      return { bg: '#6B8E23', text: '#ffffff' };
     case 'shopping':
-      return { bg: '#9333ea', text: '#ffffff' };
+      return { bg: '#8E2A59', text: '#ffffff' };
     case 'hotel':
-      return { bg: '#f59e0b', text: '#ffffff' };
+      return { bg: '#D97724', text: '#ffffff' };
   }
 };
 
@@ -95,6 +95,7 @@ export const MapView: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
+  const polylineOuterGlowRef = useRef<L.Polyline | null>(null);
   const polylineGlowRef = useRef<L.Polyline | null>(null);
   const polylineMainRef = useRef<L.Polyline | null>(null);
   const connectorLinesRef = useRef<L.Polyline[]>([]);
@@ -172,6 +173,10 @@ export const MapView: React.FC = () => {
     Object.values(markersRef.current).forEach((m) => m.remove());
     markersRef.current = {};
 
+    if (polylineOuterGlowRef.current) {
+      polylineOuterGlowRef.current.remove();
+      polylineOuterGlowRef.current = null;
+    }
     if (polylineGlowRef.current) {
       polylineGlowRef.current.remove();
       polylineGlowRef.current = null;
@@ -225,22 +230,22 @@ export const MapView: React.FC = () => {
           <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform ${
             isHovered ? 'scale-110 opacity-100' : 'opacity-85'
           }">
-            <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500 text-white font-extrabold text-[10px] shadow-sm border border-white">
+            <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#5FAF8D] text-white font-extrabold text-[10px] shadow-sm border border-white">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               <span>${act.time}</span>
             </div>
-            <div class="w-1.5 h-1.5 rotate-45 -mt-1 bg-emerald-500"></div>
+            <div class="w-1.5 h-1.5 rotate-45 -mt-1 bg-[#5FAF8D]"></div>
           </div>
         `;
       } else if (isCurrent) {
-        // Glowing pulsing current/selected marker
+        // Glowing pulsing current/selected marker with Eggnog (#F8ECC9)
         markerHtml = `
           <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform scale-110 z-50">
-            <div class="absolute -inset-2 rounded-full animate-ping opacity-35" style="background-color: ${colors.bg}"></div>
+            <div class="absolute -inset-2 rounded-full animate-ping opacity-40" style="background-color: #F8ECC9"></div>
             
             <div class="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full shadow-md border text-xs font-extrabold transition-all duration-200"
-                 style="background-color: ${colors.bg}; color: #ffffff; border-color: #ffffff">
-              <span class="flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-black bg-white/25">
+                 style="background-color: #F8ECC9; color: #2F2A24; border-color: #EAD9B8">
+              <span class="flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-black bg-[#C19A6B] text-white">
                 ${act.order}
               </span>
               <span class="text-[11px] font-bold">${act.time}</span>
@@ -253,23 +258,23 @@ export const MapView: React.FC = () => {
                 : ''
             }
 
-            <div class="w-2 h-2 rotate-45 -mt-1 shadow-sm" style="background-color: ${colors.bg}"></div>
+            <div class="w-2 h-2 rotate-45 -mt-1 shadow-sm" style="background-color: #F8ECC9"></div>
           </div>
         `;
       } else {
-        // Upcoming numbered marker with hover response
+        // Upcoming route marker with Eggnog (#F8ECC9) pill background
         markerHtml = `
           <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform ${
             isHovered ? 'scale-110' : ''
           }">
-            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/95 dark:bg-slate-900/95 border shadow-sm text-xs font-bold text-slate-800 dark:text-slate-100 transition-all duration-200"
-                 style="border-color: ${colors.bg}">
-              <span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[10px] font-extrabold text-white" style="background-color: ${colors.bg}">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full shadow-md border text-xs font-bold transition-all duration-200"
+                 style="background-color: #F8ECC9; color: #2F2A24; border-color: #EAD9B8">
+              <span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[10px] font-extrabold text-white bg-[#C19A6B]">
                 ${act.order}
               </span>
-              <span class="text-[11px]">${act.title}</span>
+              <span class="text-[11px] font-bold">${act.title}</span>
             </div>
-            <div class="w-1.5 h-1.5 rotate-45 -mt-1 shadow-sm" style="background-color: ${colors.bg}"></div>
+            <div class="w-2 h-2 rotate-45 -mt-1 shadow-sm" style="background-color: #F8ECC9"></div>
           </div>
         `;
       }
@@ -310,24 +315,35 @@ export const MapView: React.FC = () => {
       fetchRealRoute(waypoints).then((routeRes) => {
         if (!mapRef.current) return;
 
-        // Dual polyline render: ambient glow background line + vibrant main line (30% weight reduction)
+        // Multi-layer Solid Hazelnut route render:
+        // Layer 1: Soft White outer glow for separation over map features (#FFFFFF, weight 8.0, opacity 0.35)
+        const outerGlowPolyline = L.polyline(routeRes.coordinates, {
+          color: '#FFFFFF',
+          weight: 8.0,
+          opacity: 0.35,
+          lineCap: 'round',
+          lineJoin: 'round',
+        }).addTo(map);
+
+        // Layer 2: Ambient Cognac halo (#B07A4F, weight 5.8, opacity 0.25)
         const glowPolyline = L.polyline(routeRes.coordinates, {
-          color: '#3b82f6',
-          weight: 5.5,
-          opacity: 0.2,
+          color: '#B07A4F',
+          weight: 5.8,
+          opacity: 0.25,
           lineCap: 'round',
           lineJoin: 'round',
         }).addTo(map);
 
+        // Layer 3: Solid Main Hazelnut polyline (#A67C52, weight 3.7, opacity 0.85)
         const mainPolyline = L.polyline(routeRes.coordinates, {
-          color: '#2563eb',
-          weight: 3.5,
-          opacity: 0.75,
-          dashArray: '6, 6',
+          color: '#A67C52',
+          weight: 3.7,
+          opacity: 0.85,
           lineCap: 'round',
           lineJoin: 'round',
         }).addTo(map);
 
+        polylineOuterGlowRef.current = outerGlowPolyline;
         polylineGlowRef.current = glowPolyline;
         polylineMainRef.current = mainPolyline;
       });
