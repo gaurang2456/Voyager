@@ -11,7 +11,7 @@ export const WeatherCard: React.FC = () => {
 
   return (
     <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-auto transition-all duration-300">
-      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 shadow-md shadow-slate-900/5 rounded-full px-3.5 py-1.5 flex items-center gap-2.5 text-xs text-slate-800 dark:text-slate-100">
+      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-md shadow-slate-900/5 rounded-full px-3.5 py-1.5 flex items-center gap-2.5 text-xs text-slate-800 dark:text-slate-100">
         
         {/* Destination & Dates Chip */}
         <div className="flex items-center gap-1.5 pr-2 border-r border-slate-200 dark:border-slate-800">

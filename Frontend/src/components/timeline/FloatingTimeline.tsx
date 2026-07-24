@@ -66,12 +66,12 @@ export const FloatingTimeline: React.FC = () => {
     <div className="absolute top-16 left-4 md:top-28 md:left-5 z-30 flex flex-col gap-2 pointer-events-auto max-w-[185px] sm:max-w-[215px] transition-all">
       
       {/* Day Selector Pill Bar */}
-      <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-md">
+      <div className="flex items-center gap-1 p-1 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-md shadow-slate-900/5">
         {currentTrip.days.map((day) => (
           <button
             key={day.dayNumber}
             onClick={() => setActiveDay(day.dayNumber)}
-            className={`flex-1 px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
+            className={`flex-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
               day.dayNumber === activeDayNumber
                 ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs scale-105'
                 : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -83,7 +83,7 @@ export const FloatingTimeline: React.FC = () => {
       </div>
 
       {/* Vertical Timeline Container */}
-      <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-xl rounded-2xl p-2.5 max-h-[calc(100vh-160px)] overflow-y-auto custom-scrollbar transition-all duration-300">
+      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-900/5 rounded-2xl p-2.5 max-h-[calc(100vh-160px)] overflow-y-auto custom-scrollbar transition-all duration-300">
         
         <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">
@@ -121,8 +121,8 @@ export const FloatingTimeline: React.FC = () => {
                   {/* Progress Marker Indicator */}
                   <div className="relative mt-0.5 shrink-0">
                     {isCompleted ? (
-                      <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-400 text-[10px] font-bold">
-                        <Check className="w-3 h-3 text-emerald-500" />
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                        <Check className="w-3 h-3 text-white" />
                       </div>
                     ) : isCurrent ? (
                       <div className="relative flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white font-extrabold text-[10px] shadow-md ring-2 ring-blue-500/40 animate-pulse">

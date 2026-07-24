@@ -222,23 +222,23 @@ export const MapView: React.FC = () => {
 
       if (isCompleted) {
         markerHtml = `
-          <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform opacity-65 ${
-            isHovered ? 'scale-110 opacity-100' : ''
+          <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform ${
+            isHovered ? 'scale-110 opacity-100' : 'opacity-85'
           }">
-            <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/90 dark:bg-slate-800 border border-slate-300 shadow-xs text-[10px] font-semibold text-slate-600">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500 text-white font-extrabold text-[10px] shadow-sm border border-white">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               <span>${act.time}</span>
             </div>
-            <div class="w-1.5 h-1.5 rotate-45 -mt-0.5 bg-slate-300"></div>
+            <div class="w-1.5 h-1.5 rotate-45 -mt-1 bg-emerald-500"></div>
           </div>
         `;
       } else if (isCurrent) {
         // Glowing pulsing current/selected marker
         markerHtml = `
           <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform scale-110 z-50">
-            <div class="absolute -inset-2 rounded-full animate-ping opacity-40" style="background-color: ${colors.bg}"></div>
+            <div class="absolute -inset-2 rounded-full animate-ping opacity-35" style="background-color: ${colors.bg}"></div>
             
-            <div class="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full shadow-lg border text-xs font-extrabold transition-all duration-200"
+            <div class="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full shadow-md border text-xs font-extrabold transition-all duration-200"
                  style="background-color: ${colors.bg}; color: #ffffff; border-color: #ffffff">
               <span class="flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-black bg-white/25">
                 ${act.order}
@@ -260,32 +260,28 @@ export const MapView: React.FC = () => {
         // Upcoming numbered marker with hover response
         markerHtml = `
           <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform ${
-            isHovered ? 'scale-115 z-40' : 'hover:scale-105 z-20'
-          } ${isSkipped ? 'opacity-35 grayscale' : ''}">
-            <div class="relative flex items-center gap-1 px-2 py-0.5 rounded-full shadow-sm border bg-white/95 text-slate-800 border-slate-200 backdrop-blur-md text-xs font-semibold transition-all">
-              <span class="flex items-center justify-center w-3.5 h-3.5 rounded-full text-[9px] font-black text-white" style="background-color: ${colors.bg}">
+            isHovered ? 'scale-110' : ''
+          }">
+            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/95 dark:bg-slate-900/95 border shadow-sm text-xs font-bold text-slate-800 dark:text-slate-100 transition-all duration-200"
+                 style="border-color: ${colors.bg}">
+              <span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[10px] font-extrabold text-white" style="background-color: ${colors.bg}">
                 ${act.order}
               </span>
-              <span class="text-[10px] text-slate-700 font-bold">${act.time}</span>
+              <span class="text-[11px]">${act.title}</span>
             </div>
-            ${
-              act.priority === 'high'
-                ? `<div class="w-1.5 h-1.5 rounded-full bg-rose-500 ring-1 ring-white -mt-0.5 z-10"></div>`
-                : ''
-            }
-            <div class="w-1.5 h-1.5 rotate-45 -mt-0.5 bg-white border-r border-b border-slate-200"></div>
+            <div class="w-1.5 h-1.5 rotate-45 -mt-1 shadow-sm" style="background-color: ${colors.bg}"></div>
           </div>
         `;
       }
 
       const customIcon = L.divIcon({
         html: markerHtml,
-        className: 'custom-map-marker-container',
-        iconSize: [80, 40],
-        iconAnchor: [40, 38],
+        className: 'custom-leaflet-marker',
+        iconSize: [120, 36],
+        iconAnchor: [60, 36],
       });
 
-      const zIndex = isSelected ? 1000 : isHovered ? 900 : 100 + act.order;
+      const zIndex = isSelected ? 1000 : isCurrent ? 800 : isHovered ? 900 : 500;
       const marker = L.marker([renderLat, renderLng], {
         icon: customIcon,
         zIndexOffset: zIndex,
@@ -314,11 +310,11 @@ export const MapView: React.FC = () => {
       fetchRealRoute(waypoints).then((routeRes) => {
         if (!mapRef.current) return;
 
-        // Dual polyline render: ambient glow background line + vibrant animated line
+        // Dual polyline render: ambient glow background line + vibrant main line (30% weight reduction)
         const glowPolyline = L.polyline(routeRes.coordinates, {
           color: '#3b82f6',
-          weight: 7,
-          opacity: 0.25,
+          weight: 5.5,
+          opacity: 0.2,
           lineCap: 'round',
           lineJoin: 'round',
         }).addTo(map);
@@ -326,8 +322,8 @@ export const MapView: React.FC = () => {
         const mainPolyline = L.polyline(routeRes.coordinates, {
           color: '#2563eb',
           weight: 3.5,
-          opacity: 0.9,
-          dashArray: '8, 8',
+          opacity: 0.75,
+          dashArray: '6, 6',
           lineCap: 'round',
           lineJoin: 'round',
         }).addTo(map);

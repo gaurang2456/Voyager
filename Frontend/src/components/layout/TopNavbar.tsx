@@ -51,17 +51,19 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             aria-label="Select Trip Destination"
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-md shadow-slate-900/5 text-left hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <span>{activeTrip.destination}</span>
-            {activeTrip.personalityTags && activeTrip.personalityTags.length > 0 && (
-              <span className="hidden sm:inline text-[10px] text-amber-600 dark:text-amber-400 font-semibold">• {activeTrip.personalityTags[0]}</span>
-            )}
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <div className="flex flex-col leading-none">
+              <span className="text-[11px] font-black text-slate-800 dark:text-slate-100">{activeTrip.destination}</span>
+              {activeTrip.personalityTags && activeTrip.personalityTags.length > 0 && (
+                <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold mt-0.5">{activeTrip.personalityTags[0]}</span>
+              )}
+            </div>
+            <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1.5 w-52 rounded-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-xl p-1 z-50 animate-fadeIn">
+            <div className="absolute top-full left-0 mt-1.5 w-52 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xl p-1 z-50 animate-fadeIn">
               {trips.map((t) => (
                 <button
                   key={t.id}
@@ -91,15 +93,15 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         </div>
       </div>
 
-      {/* Center: Minimal Horizontal Journey Progress Bar */}
+      {/* Center: Premium Horizontal Journey Progress Bar with Rich Tooltips */}
       {activities.length > 0 && (
-        <div className="hidden lg:flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs text-xs">
-          <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+        <div className="hidden lg:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-md shadow-slate-900/5 text-xs">
+          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0">
             <Clock className="w-3 h-3 text-blue-500" />
             {activities[0].time}
           </span>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {activities.map((act, index) => {
               const isSelected = selectedActivityId === act.id;
               const isCompleted = act.status === 'completed';
@@ -107,10 +109,10 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
               return (
                 <React.Fragment key={act.id}>
-                  {/* Progress Line Connector */}
+                  {/* Connector Segment */}
                   {index > 0 && (
                     <div
-                      className={`h-0.5 w-5 rounded-full transition-colors duration-500 ${
+                      className={`h-0.5 w-6 rounded-full transition-colors duration-500 ${
                         isCompleted || (activities[index - 1] && activities[index - 1].status === 'completed')
                           ? 'bg-emerald-500'
                           : 'bg-slate-200 dark:bg-slate-700'
@@ -118,38 +120,56 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                     />
                   )}
 
-                  {/* Activity Stop Step Button */}
-                  <button
-                    onClick={() => setSelectedActivity(act.id)}
-                    onMouseEnter={() => setHoveredActivity(act.id)}
-                    onMouseLeave={() => setHoveredActivity(null)}
-                    title={`${act.time} - ${act.title}`}
-                    aria-label={`Journey step ${index + 1}: ${act.title}`}
-                    className={`relative w-5 h-5 rounded-full text-[10px] font-extrabold flex items-center justify-center transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-400 scale-110 z-10'
-                        : isCurrent
-                        ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-400/50 animate-pulse'
-                        : isCompleted
-                        ? 'bg-emerald-500 text-white shadow-xs'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {isCompleted ? <Check className="w-3 h-3" /> : index + 1}
-                  </button>
+                  {/* Interactive Step Node & Hover Card */}
+                  <div className="relative group">
+                    <button
+                      onClick={() => setSelectedActivity(act.id)}
+                      onMouseEnter={() => setHoveredActivity(act.id)}
+                      onMouseLeave={() => setHoveredActivity(null)}
+                      aria-label={`Journey step ${index + 1}: ${act.title}`}
+                      className={`relative w-5.5 h-5.5 rounded-full text-[10px] font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-400 scale-110 z-10'
+                          : isCurrent
+                          ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-400/50 animate-pulse'
+                          : isCompleted
+                          ? 'bg-emerald-500 text-white shadow-xs'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {isCompleted ? <Check className="w-3 h-3 text-white" /> : index + 1}
+                    </button>
+
+                    {/* Rich Hover Tooltip Card */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex flex-col gap-1 p-2.5 rounded-xl bg-slate-950 text-white shadow-2xl text-[10px] whitespace-nowrap pointer-events-none z-50 border border-slate-800 animate-fadeIn">
+                      <div className="font-extrabold text-xs text-white max-w-[160px] truncate">{act.title}</div>
+                      <div className="flex items-center justify-between gap-3 text-slate-400">
+                        <span className="font-medium">{act.time}</span>
+                        <span className={`px-1.5 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wide ${
+                          isCompleted
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : isCurrent
+                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            : 'bg-slate-800 text-slate-400'
+                        }`}>
+                          {act.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </React.Fragment>
               );
             })}
           </div>
 
-          <span className="text-[10px] font-bold text-slate-400">
+          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 shrink-0">
             {activities[activities.length - 1].time}
           </span>
         </div>
       )}
 
       {/* Right: Minimal Navigation & Theme Toggle */}
-      <nav className="flex items-center gap-1 p-0.5 rounded-full bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs shrink-0">
+      <nav className="flex items-center gap-1 p-0.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-md shadow-slate-900/5 shrink-0">
         <button
           onClick={onOpenTrips}
           aria-label="View Trips"

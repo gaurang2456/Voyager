@@ -43,6 +43,7 @@ export const ActivityDetailPanel: React.FC = () => {
 
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [isReplacing, setIsReplacing] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const currentTrip = trips.find((t) => t.id === activeTripId);
   const currentDay = currentTrip?.days.find((d) => d.dayNumber === activeDayNumber);
@@ -54,10 +55,8 @@ export const ActivityDetailPanel: React.FC = () => {
   const isSkipped = activity.status === 'skipped';
   const isCompleted = activity.status === 'completed';
 
-  const handleNavigate = () => {
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      `${activity.title} ${activity.locationName}`
-    )}`;
+  const handleLaunchExternalMap = () => {
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${activity.lat},${activity.lng}`;
     window.open(mapsUrl, '_blank');
   };
 
@@ -75,11 +74,11 @@ export const ActivityDetailPanel: React.FC = () => {
       onMouseLeave={() => setHoveredActivity(null)}
       className="absolute bottom-20 left-4 right-4 top-auto w-auto max-w-none md:top-16 md:right-5 md:left-auto md:w-72 md:max-w-[288px] md:bottom-auto z-40 pointer-events-auto transition-all duration-300 animate-fadeIn"
     >
-      <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-xl rounded-2xl p-3.5 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar">
+      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-xl shadow-slate-900/10 rounded-3xl p-3.5 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar">
         
         {/* Travel Hero Image Banner */}
         {activity.imageUrl && (
-          <div className="relative w-full h-32 rounded-xl overflow-hidden shadow-xs border border-slate-200/50 dark:border-slate-800 shrink-0">
+          <div className="relative w-full h-44 rounded-xl overflow-hidden shadow-xs border border-slate-200/50 dark:border-slate-800 shrink-0">
             <img
               src={activity.imageUrl}
               alt={activity.title}
@@ -187,16 +186,56 @@ export const ActivityDetailPanel: React.FC = () => {
           </div>
         )}
 
-        {/* Action Buttons Section Directly Below Content */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1.5">
-          <button
-            onClick={handleNavigate}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
-          >
-            <Navigation className="w-3.5 h-3.5" />
-            <span>Navigate in Maps</span>
-            <ExternalLink className="w-3 h-3 opacity-60 ml-auto" />
-          </button>
+        {/* In-App Navigation Active Overlay Panel */}
+        {isNavigating ? (
+          <div className="p-2.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex flex-col gap-2 text-xs animate-fadeIn">
+            <div className="flex items-center justify-between font-bold text-blue-600 dark:text-blue-400">
+              <span className="flex items-center gap-1">
+                <Navigation className="w-3.5 h-3.5 animate-pulse" />
+                Active Route Navigation
+              </span>
+              <button
+                onClick={() => setIsNavigating(false)}
+                className="text-[10px] text-slate-400 hover:text-slate-200"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1 text-center py-1 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-blue-500/10">
+              <div>
+                <div className="text-[9px] text-slate-400 font-bold uppercase">Walking</div>
+                <div className="font-extrabold text-slate-900 dark:text-white text-xs">12 min</div>
+              </div>
+              <div>
+                <div className="text-[9px] text-slate-400 font-bold uppercase">Distance</div>
+                <div className="font-extrabold text-slate-900 dark:text-white text-xs">0.9 km</div>
+              </div>
+              <div>
+                <div className="text-[9px] text-slate-400 font-bold uppercase">Arrival</div>
+                <div className="font-extrabold text-emerald-600 dark:text-emerald-400 text-xs">12:42 PM</div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLaunchExternalMap}
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+            >
+              <span>Launch Directions in Maps</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </button>
+          </div>
+        ) : (
+          /* Action Buttons Section Directly Below Content */
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1.5">
+            <button
+              onClick={() => setIsNavigating(true)}
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Navigate in Maps</span>
+              <ExternalLink className="w-3 h-3 opacity-60 ml-auto" />
+            </button>
 
           <div className="grid grid-cols-2 gap-1.5">
             <button
@@ -229,6 +268,7 @@ export const ActivityDetailPanel: React.FC = () => {
             <span>{showMoreDetails ? 'Less Info' : 'More Details'}</span>
           </button>
         </div>
+        )}
 
       </div>
     </div>

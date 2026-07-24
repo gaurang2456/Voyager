@@ -18,7 +18,7 @@ export const AIInsightCard: React.FC = () => {
 
   return (
     <div className="absolute top-24 left-1/2 -translate-x-1/2 z-30 pointer-events-auto transition-all duration-300 animate-fadeIn">
-      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-purple-500/20 dark:border-purple-500/30 shadow-lg shadow-purple-500/5 rounded-full px-3 py-1 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-100 max-w-sm sm:max-w-md">
+      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-purple-500/20 dark:border-purple-500/30 shadow-md shadow-purple-500/5 rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-100 max-w-sm sm:max-w-md">
         <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold text-[10px] shrink-0 border border-purple-500/20">
           <Brain className="w-3 h-3 text-purple-500" />
           <span>AI Insight</span>
