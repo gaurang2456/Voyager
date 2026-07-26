@@ -1,0 +1,23 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Maven
+target/
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+
+# Environment
+.env
+.env.*
+
+# OS
+desktop.ini
+Thumbs.db
+
+# Logs
+*.log
