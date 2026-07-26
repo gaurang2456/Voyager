@@ -301,11 +301,6 @@ If you have ideas for improving Voyager, feel free to open an issue.
 
 ---
 
-# 📄 License
-
-MIT License
-
----
 
 <div align="center">
 
