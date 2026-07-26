@@ -16,6 +16,8 @@ public class ItineraryResponse {
     private Long tripId;
     private LocalDateTime generatedAt;
     private Integer version;
+    private String modificationSummary;
+
     @Builder.Default
     private List<ItineraryDayResponse> days = new ArrayList<>();
 }

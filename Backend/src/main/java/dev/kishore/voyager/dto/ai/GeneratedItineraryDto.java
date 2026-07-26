@@ -11,6 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class GeneratedItineraryDto {
+    private String modificationSummary;
+
     @Builder.Default
     private List<GeneratedItineraryDayDto> days = new ArrayList<>();
 }

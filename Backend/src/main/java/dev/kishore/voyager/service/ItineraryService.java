@@ -62,7 +62,9 @@ public class ItineraryService {
         itinerary.setVersion(1);
 
         Itinerary savedItinerary = itineraryRepository.save(itinerary);
-        return itineraryMapper.toResponse(savedItinerary);
+        ItineraryResponse response = itineraryMapper.toResponse(savedItinerary);
+        response.setModificationSummary(generatedDto.getModificationSummary());
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -78,12 +80,17 @@ public class ItineraryService {
     @Transactional
     public void deleteItinerary(Long tripId) {
         User user = getCurrentUser();
-        getOwnedTrip(tripId); // Verifies ownership
+        getOwnedTrip(tripId);
         itineraryRepository.deleteByTripIdAndTripUserEmail(tripId, user.getEmail());
     }
 
     @Transactional
     public ItineraryResponse regenerateItinerary(Long tripId) {
+        return regenerateItinerary(tripId, null);
+    }
+
+    @Transactional
+    public ItineraryResponse regenerateItinerary(Long tripId, String userInstruction) {
         Trip trip = getOwnedTrip(tripId);
         User user = getCurrentUser();
 
@@ -96,7 +103,7 @@ public class ItineraryService {
                 trip.getDestination(), trip.getStartDate(), trip.getEndDate()
         );
 
-        GeneratedItineraryDto generatedDto = aiItineraryService.generateItineraryDto(trip, weatherForecasts);
+        GeneratedItineraryDto generatedDto = aiItineraryService.generateItineraryDto(trip, weatherForecasts, userInstruction);
 
         Itinerary itinerary = itineraryMapper.toEntity(generatedDto);
         itinerary.setTrip(trip);
@@ -104,6 +111,8 @@ public class ItineraryService {
         itinerary.setVersion(nextVersion);
 
         Itinerary savedItinerary = itineraryRepository.save(itinerary);
-        return itineraryMapper.toResponse(savedItinerary);
+        ItineraryResponse response = itineraryMapper.toResponse(savedItinerary);
+        response.setModificationSummary(generatedDto.getModificationSummary());
+        return response;
     }
 }

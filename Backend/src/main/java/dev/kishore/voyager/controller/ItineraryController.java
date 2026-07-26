@@ -37,8 +37,9 @@ public class ItineraryController {
 
     @PostMapping("/regenerate")
     public ResponseEntity<ItineraryResponse> regenerateItinerary(
-            @PathVariable Long tripId
+            @PathVariable Long tripId,
+            @RequestParam(required = false) String prompt
     ) {
-        return ResponseEntity.ok(itineraryService.regenerateItinerary(tripId));
+        return ResponseEntity.ok(itineraryService.regenerateItinerary(tripId, prompt));
     }
 }
