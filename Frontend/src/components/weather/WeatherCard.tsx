@@ -36,20 +36,24 @@ export const WeatherCard: React.FC = () => {
   const remainingBudget = Math.max(0, totalBudget - totalSpent);
 
   return (
-    <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center justify-center gap-1.5 transition-all duration-300">
+    <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center justify-center gap-1.5 transition-all duration-300">
       
-      {/* 1. Day Selector Bar (Symmetrically Centered at Very Top) */}
+      {/* 1. Day Selector Bar (Symmetrically Centered at Very Top - Pointer Events Enabled) */}
       {days.length > 0 && (
-        <div className="pointer-events-auto flex items-center justify-center gap-1 p-0.5 rounded-full bg-[#FAF8F3]/95 backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 max-w-fit mx-auto transition-all animate-fadeIn">
+        <div className="pointer-events-auto flex items-center justify-center gap-1 p-0.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-lg shadow-amber-950/10 max-w-fit mx-auto transition-all animate-fadeIn z-50">
           {days.map((day) => {
             const isActive = day.dayNumber === activeDayNumber;
             return (
               <button
                 key={day.dayNumber}
-                onClick={() => setActiveDay(day.dayNumber)}
-                className={`px-3.5 py-0.5 rounded-full text-[11px] transition-all cursor-pointer ${
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveDay(day.dayNumber);
+                }}
+                className={`px-3.5 py-1 rounded-full text-[11px] transition-all cursor-pointer select-none ${
                   isActive
-                    ? 'bg-[#4A443D] text-[#FAF8F3] font-extrabold shadow-xs border border-[#5C5346] scale-105'
+                    ? 'bg-[#4A443D] text-[#FAF8F3] font-extrabold shadow-sm border border-[#5C5346] scale-105'
                     : 'bg-transparent text-[#6E665C] font-semibold border border-[#E8E2D5]/60 hover:bg-[#EFE8DD] hover:text-[#2F2A24]'
                 }`}
               >

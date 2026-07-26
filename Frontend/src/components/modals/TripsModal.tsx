@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, MapPin, Calendar, Plus, Luggage, Sparkles, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { X, MapPin, Calendar, Plus, Luggage, Sparkles, AlertCircle, RefreshCw, Trash2, History } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTravelStore } from '../../store/useTravelStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -16,6 +16,7 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
   const { token } = useAuthStore();
   const queryClient = useQueryClient();
 
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
   const [isCreating, setIsCreating] = useState(false);
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('2026-10-12');
@@ -33,6 +34,21 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
   const deleteTripMutation = useDeleteTripMutation();
 
   if (!isOpen) return null;
+
+  const todayStr = new Date().toISOString().substring(0, 10);
+
+  // Categorize trips into Upcoming/Active vs Past
+  const upcomingTrips = myTrips.filter((t) => {
+    if (!t.endDate) return true;
+    return t.endDate >= todayStr;
+  });
+
+  const pastTrips = myTrips.filter((t) => {
+    if (!t.endDate) return false;
+    return t.endDate < todayStr;
+  });
+
+  const displayedTrips = activeTab === 'upcoming' ? upcomingTrips : pastTrips;
 
   const validate = () => {
     const errs: { [key: string]: string } = {};
@@ -101,7 +117,6 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
     try {
       await deleteTripMutation.mutateAsync(targetId);
 
-      // If active trip is deleted, switch to another existing trip or set to null
       if (String(targetId) === String(activeTripId)) {
         const remaining = myTrips.filter((t) => String(t.id) !== String(targetId));
         if (remaining.length > 0) {
@@ -125,10 +140,10 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
         <div className="w-full max-w-lg bg-[#FAF8F3] border border-[#E8E2D5] rounded-3xl shadow-2xl p-6 text-[#2F2A24]">
           
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D5]">
+          <div className="flex items-center justify-between pb-3 border-b border-[#E8E2D5]">
             <div className="flex items-center gap-2">
               <Luggage className="w-5 h-5 text-[#C19A6B]" />
-              <h2 className="font-serif-luxury text-lg font-bold tracking-tight text-[#2F2A24]">My Saved Journeys</h2>
+              <h2 className="font-serif-luxury text-lg font-bold tracking-tight text-[#2F2A24]">My Journeys</h2>
             </div>
             <button
               onClick={() => {
@@ -144,6 +159,34 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
               <X className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Navigation Tabs: Upcoming vs Past Trips */}
+          {!isCreating && (
+            <div className="mt-3 flex items-center gap-1.5 p-1 rounded-2xl bg-[#EFE8DD]/80 border border-[#E8E2D5]">
+              <button
+                onClick={() => setActiveTab('upcoming')}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  activeTab === 'upcoming'
+                    ? 'bg-[#4A443D] text-white shadow-xs'
+                    : 'text-[#6E665C] hover:bg-[#E6DEC9]'
+                }`}
+              >
+                <Luggage className="w-3.5 h-3.5" />
+                <span>Upcoming & Active ({upcomingTrips.length})</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('past')}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  activeTab === 'past'
+                    ? 'bg-[#4A443D] text-white shadow-xs'
+                    : 'text-[#6E665C] hover:bg-[#E6DEC9]'
+                }`}
+              >
+                <History className="w-3.5 h-3.5 text-[#C19A6B]" />
+                <span>Past Trips ({pastTrips.length})</span>
+              </button>
+            </div>
+          )}
 
           {/* Inline Create Form or Trips List */}
           {isCreating ? (
@@ -267,16 +310,38 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
               </div>
             </form>
           ) : (
-            <div className="mt-4 flex flex-col gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
-              {myTrips.length === 0 ? (
+            <div className="mt-3 flex flex-col gap-2.5 max-h-[55vh] overflow-y-auto custom-scrollbar">
+              {displayedTrips.length === 0 ? (
                 <div className="p-6 text-center text-[#6E665C]">
-                  <Luggage className="w-8 h-8 text-[#C19A6B] mx-auto mb-2 opacity-60" />
-                  <p className="font-serif-luxury font-bold text-sm text-[#2F2A24]">No saved journeys yet</p>
-                  <p className="text-xs mt-1">Create your first itinerary to get started.</p>
+                  {activeTab === 'past' ? (
+                    <>
+                      <History className="w-8 h-8 text-[#C19A6B] mx-auto mb-2 opacity-60" />
+                      <p className="font-serif-luxury font-bold text-sm text-[#2F2A24]">No past journeys yet</p>
+                      <p className="text-xs mt-1">Complete an upcoming trip or add a past travel memory!</p>
+                      <button
+                        onClick={() => {
+                          setStartDate('2024-05-10');
+                          setEndDate('2024-05-17');
+                          setIsCreating(true);
+                        }}
+                        className="mt-3 py-1.5 px-3 rounded-xl bg-[#C19A6B]/15 text-[#8E2A59] border border-[#C19A6B]/30 text-xs font-bold hover:bg-[#C19A6B]/25 transition-all cursor-pointer"
+                      >
+                        + Add a Past Travel Memory
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Luggage className="w-8 h-8 text-[#C19A6B] mx-auto mb-2 opacity-60" />
+                      <p className="font-serif-luxury font-bold text-sm text-[#2F2A24]">No upcoming journeys yet</p>
+                      <p className="text-xs mt-1">Create your next luxury escape to get started.</p>
+                    </>
+                  )}
                 </div>
               ) : (
-                myTrips.map((trip) => {
+                displayedTrips.map((trip) => {
                   const isActive = String(trip.id) === String(activeTripId);
+                  const isPast = Boolean(trip.endDate && trip.endDate < todayStr);
+
                   return (
                     <div
                       key={trip.id}
@@ -284,9 +349,11 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
                         setActiveTrip(String(trip.id));
                         onClose();
                       }}
-                      className={`group p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                      className={`group p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                         isActive
                           ? 'bg-[#C19A6B]/15 border-[#C19A6B]/40 shadow-sm'
+                          : isPast
+                          ? 'bg-[#F8F5EF]/80 border-[#E8E2D5] opacity-85 hover:opacity-100 hover:border-stone-400'
                           : 'bg-[#F3EFE8] border-[#E8E2D5] hover:border-stone-400'
                       }`}
                     >
@@ -294,7 +361,20 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
                         <div>
                           <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4 text-[#C19A6B]" />
-                            <h3 className="font-bold text-base text-[#2F2A24]">{trip.destination}</h3>
+                            <h3 className="font-bold text-sm text-[#2F2A24]">{trip.destination}</h3>
+                            {isPast ? (
+                              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-stone-200 text-stone-600 border border-stone-300">
+                                Past
+                              </span>
+                            ) : isActive ? (
+                              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-[#5FAF8D]/20 text-[#4F9F7F] border border-[#5FAF8D]/30">
+                                Active
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-[#C19A6B]/15 text-[#8E2A59] border border-[#C19A6B]/30">
+                                Upcoming
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-[#6E665C] mt-1">
                             <Calendar className="w-3.5 h-3.5" />
@@ -303,10 +383,10 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <span className="text-xs text-[#A59E93]">Budget</span>
-                          <div className="font-bold text-sm text-[#5FAF8D]">${trip.budget || 2000}</div>
+                          <span className="text-[10px] text-[#A59E93]">Budget</span>
+                          <div className="font-bold text-xs text-[#5FAF8D]">${trip.budget || 2000}</div>
                         </div>
 
                         {/* Delete Trash Icon Button */}
@@ -317,9 +397,9 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
                             setDeletingTripId(trip.id);
                           }}
                           title="Delete trip"
-                          className="p-2 rounded-xl text-[#8E867A] hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer opacity-70 hover:opacity-100 shrink-0"
+                          className="p-1.5 rounded-xl text-[#8E867A] hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer opacity-70 hover:opacity-100 shrink-0"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
@@ -332,7 +412,7 @@ export const TripsModal: React.FC<TripsModalProps> = ({ isOpen, onClose }) => {
                   setIsCreating(true);
                   setErrorMessage(null);
                 }}
-                className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#4A443D] hover:bg-[#38332E] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#4A443D] hover:bg-[#38332E] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create New AI Trip</span>

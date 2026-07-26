@@ -32,10 +32,10 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
     : null;
 
   return (
-    <header className="absolute top-3 left-4 right-4 md:left-5 md:right-5 z-30 flex items-center justify-between pointer-events-auto gap-2">
+    <header className="absolute top-3 left-4 right-4 md:left-5 md:right-5 z-40 flex items-center justify-between pointer-events-none gap-2">
       
-      {/* Left: Minimal Brand & Destination Selector */}
-      <div className="flex items-center gap-2 shrink-0">
+      {/* Left: Minimal Brand & Destination Selector (Pointer Events Enabled) */}
+      <div className="flex items-center gap-2 shrink-0 pointer-events-auto">
         <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#4A443D] text-[#FAF8F3] font-serif-luxury font-bold text-xs shadow-md tracking-wider border border-[#5C5346]">
           <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
           <span>Voyager</span>
@@ -45,48 +45,50 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] text-[#2F2A24] text-xs font-bold shadow-md shadow-amber-950/5 hover:bg-[#F3EFE8] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] text-[#2F2A24] text-xs font-bold shadow-md shadow-amber-950/10 hover:bg-[#F3EFE8] transition-all cursor-pointer ring-2 ring-[#C19A6B]/20"
             >
-              <span className="truncate max-w-[120px]">{activeTrip.destination}</span>
+              <span className="truncate max-w-[140px] text-[#2F2A24]">{activeTrip.destination}</span>
               {activeTrip.startDate && (
                 <span className="text-[10px] text-slate-400 font-normal hidden lg:inline">
                   {activeTrip.startDate.substring(0, 7)}
                 </span>
               )}
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-[#C19A6B] transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Destination Dropdown */}
+            {/* Destination Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-52 bg-[#FAF8F3] border border-[#E8E2D5] rounded-2xl shadow-xl p-1.5 z-50 text-[#2F2A24] animate-fadeIn">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#A59E93] px-2 py-1">
-                  Switch Journey
+              <div className="absolute top-full left-0 mt-2 w-56 bg-[#FAF8F3] border border-[#E8E2D5] rounded-2xl shadow-2xl p-1.5 z-50 text-[#2F2A24] animate-fadeIn backdrop-blur-2xl pointer-events-auto">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#A59E93] px-2.5 py-1 border-b border-[#E8E2D5]/60 mb-1">
+                  Switch Destination
                 </div>
-                {myTrips.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => {
-                      setActiveTrip(String(t.id));
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
-                      String(t.id) === String(activeTripId)
-                        ? 'bg-[#C19A6B]/15 text-[#8E2A59]'
-                        : 'hover:bg-[#F3EFE8] text-[#6E665C]'
-                    }`}
-                  >
-                    <span className="truncate">{t.destination}</span>
-                    {t.startDate && <span className="text-[10px] text-slate-400">{t.startDate}</span>}
-                  </button>
-                ))}
+                <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                  {myTrips.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setActiveTrip(String(t.id));
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                        String(t.id) === String(activeTripId)
+                          ? 'bg-[#C19A6B]/20 text-[#8E2A59] font-bold'
+                          : 'hover:bg-[#F3EFE8] text-[#6E665C]'
+                      }`}
+                    >
+                      <span className="truncate">{t.destination}</span>
+                      {t.startDate && <span className="text-[10px] text-slate-400">{t.startDate}</span>}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Right: Minimal Navigation & Theme Toggle */}
-      <nav className="flex items-center gap-1 p-0.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 shrink-0">
+      {/* Right: Minimal Navigation & Theme Toggle (Pointer Events Enabled) */}
+      <nav className="flex items-center gap-1 p-0.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 shrink-0 pointer-events-auto">
         <button
           onClick={onOpenTrips}
           aria-label="View Trips"

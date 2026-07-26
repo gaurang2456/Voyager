@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   X,
   Navigation,
-  RefreshCw,
   SkipForward,
   Info,
   Clock,
@@ -15,7 +14,7 @@ import {
 import { useTravelStore } from '../../store/useTravelStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useMyTripsQuery } from '../../hooks/useTrips';
-import { useItineraryQuery, useRegenerateItineraryMutation } from '../../hooks/useItinerary';
+import { useItineraryQuery } from '../../hooks/useItinerary';
 import { transformItineraryResponseToDays } from '../../api/itinerary';
 import type { ActivityCategory } from '../../types/travel';
 
@@ -42,20 +41,20 @@ export const ActivityDetailPanel: React.FC = () => {
     setHoveredActivity,
     completedActivityIds,
     toggleActivityCompleted,
+    skippedActivityIds,
+    toggleActivitySkipped,
   } = useTravelStore();
 
   const { token } = useAuthStore();
 
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isSkipped, setIsSkipped] = useState(false);
 
   const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
   const currentTrip = myTrips.find((t) => String(t.id) === String(activeTripId));
   const numericTripId = currentTrip ? Number(currentTrip.id) : null;
 
   const { data: itineraryData } = useItineraryQuery(numericTripId, Boolean(token && numericTripId));
-  const regenerateMutation = useRegenerateItineraryMutation();
 
   const days = itineraryData ? transformItineraryResponseToDays(itineraryData) : [];
   const currentDay = days.find((d) => d.dayNumber === activeDayNumber) || days[0];
@@ -65,19 +64,11 @@ export const ActivityDetailPanel: React.FC = () => {
 
   const categoryStyles = getCategoryStyles(activity.category);
   const isCompleted = Boolean(completedActivityIds[activity.id] || activity.status === 'completed');
+  const isSkipped = Boolean(skippedActivityIds[activity.id]);
 
   const handleLaunchExternalMap = () => {
     const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${activity.lat},${activity.lng}`;
     window.open(mapsUrl, '_blank');
-  };
-
-  const handleReplace = () => {
-    if (numericTripId) {
-      regenerateMutation.mutate({
-        tripId: numericTripId,
-        prompt: `Replace "${activity.title}" with a fresh local recommendation`,
-      });
-    }
   };
 
   return (
@@ -118,6 +109,11 @@ export const ActivityDetailPanel: React.FC = () => {
               {isCompleted && (
                 <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#5FAF8D]/15 text-[#4F9F7F] border border-[#5FAF8D]/30">
                   <CheckCircle2 className="w-3 h-3" /> Completed
+                </span>
+              )}
+              {isSkipped && (
+                <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-stone-200 text-stone-600 border border-stone-300">
+                  Skipped
                 </span>
               )}
               <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold capitalize border ${categoryStyles.bg} ${categoryStyles.text} ${categoryStyles.border}`}>
@@ -241,43 +237,35 @@ export const ActivityDetailPanel: React.FC = () => {
           /* Action Buttons Section Directly Below Content */
           <div className="pt-2 border-t border-[#E8E2D6] flex flex-col gap-1.5">
             
-            {/* Mark As Completed Primary Action Button */}
-            <button
-              onClick={() => toggleActivityCompleted(activity.id)}
-              className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer ${
-                isCompleted
-                  ? 'bg-[#5FAF8D] hover:bg-[#4F9F7F] text-white'
-                  : 'bg-[#5FAF8D]/15 hover:bg-[#5FAF8D]/25 text-[#4F9F7F] border border-[#5FAF8D]/30'
-              }`}
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{isCompleted ? 'Completed ✓' : 'Mark as Completed'}</span>
-            </button>
-
+            {/* Primary Action Button: Navigate in Maps */}
             <button
               onClick={() => setIsNavigating(true)}
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-[#C19A6B] hover:bg-[#A88254] active:scale-98 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#C19A6B] hover:bg-[#A88254] active:scale-98 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
             >
               <Navigation className="w-3.5 h-3.5" />
               <span>Navigate in Maps</span>
               <ExternalLink className="w-3 h-3 opacity-60 ml-auto" />
             </button>
 
+            {/* Grid Row: Mark as Completed & Skip Buttons */}
             <div className="grid grid-cols-2 gap-1.5">
               <button
-                onClick={handleReplace}
-                disabled={regenerateMutation.isPending}
-                className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-[#F3EFE8] hover:bg-[#E6DEC9] active:scale-98 text-[#2F2A24] border border-[#E8E2D5] text-xs font-semibold transition-all cursor-pointer"
+                onClick={() => toggleActivityCompleted(activity.id)}
+                className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl text-xs font-semibold active:scale-98 transition-all cursor-pointer ${
+                  isCompleted
+                    ? 'bg-[#5FAF8D] hover:bg-[#4F9F7F] text-white shadow-xs'
+                    : 'bg-[#F3EFE8] hover:bg-[#E6DEC9] text-[#2F2A24] border border-[#E8E2D5]'
+                }`}
               >
-                <RefreshCw className={`w-3 h-3 ${regenerateMutation.isPending ? 'animate-spin' : ''}`} />
-                <span>Replace</span>
+                <CheckCircle2 className={`w-3.5 h-3.5 ${isCompleted ? 'text-white' : 'text-[#5FAF8D]'}`} />
+                <span>{isCompleted ? 'Completed ✓' : 'Mark Complete'}</span>
               </button>
 
               <button
-                onClick={() => setIsSkipped(!isSkipped)}
+                onClick={() => toggleActivitySkipped(activity.id)}
                 className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border text-xs font-semibold active:scale-98 transition-all cursor-pointer ${
                   isSkipped
-                    ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
+                    ? 'bg-[#4A443D] text-white border-[#5C5346]'
                     : 'bg-[#F3EFE8] hover:bg-[#E6DEC9] text-[#2F2A24] border-[#E8E2D5]'
                 }`}
               >

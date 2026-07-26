@@ -10,6 +10,7 @@ export interface TravelUIState {
   filterCategory: ActivityCategory | 'all';
   searchQuery: string;
   completedActivityIds: Record<string, boolean>;
+  skippedActivityIds: Record<string, boolean>;
 
   setActiveTrip: (tripId: string | null) => void;
   setActiveDay: (dayNumber: number) => void;
@@ -19,6 +20,7 @@ export interface TravelUIState {
   setFilterCategory: (category: ActivityCategory | 'all') => void;
   setSearchQuery: (query: string) => void;
   toggleActivityCompleted: (activityId: string) => void;
+  toggleActivitySkipped: (activityId: string) => void;
 }
 
 export const useTravelStore = create<TravelUIState>((set) => ({
@@ -30,6 +32,7 @@ export const useTravelStore = create<TravelUIState>((set) => ({
   filterCategory: 'all',
   searchQuery: '',
   completedActivityIds: {},
+  skippedActivityIds: {},
 
   setActiveTrip: (tripId: string | null) =>
     set({ activeTripId: tripId, activeDayNumber: 1, selectedActivityId: null, isPanelOpen: false }),
@@ -51,6 +54,13 @@ export const useTravelStore = create<TravelUIState>((set) => ({
       completedActivityIds: {
         ...state.completedActivityIds,
         [activityId]: !state.completedActivityIds[activityId],
+      },
+    })),
+  toggleActivitySkipped: (activityId: string) =>
+    set((state) => ({
+      skippedActivityIds: {
+        ...state.skippedActivityIds,
+        [activityId]: !state.skippedActivityIds[activityId],
       },
     })),
 }));
