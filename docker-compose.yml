@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: voyager-mysql
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: voyager
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-proot123" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  backend:
+    build: ./Backend
+    container_name: voyager-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/voyager
+      DB_USERNAME: root
+      DB_PASSWORD: root123
+      JWT_SECRET: thisIsMySuperSecretJwtKeyForVoyagerApplication2026SpringBootSecurity
+
+volumes:
+  mysql-data:
