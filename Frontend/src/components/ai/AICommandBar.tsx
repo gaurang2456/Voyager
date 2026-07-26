@@ -14,15 +14,18 @@ import {
   Route,
 } from 'lucide-react';
 import { useTravelStore } from '../../store/useTravelStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useMyTripsQuery } from '../../hooks/useTrips';
+import { useAIRegenerateMutation } from '../../hooks/useAI';
 
 const SUGGESTIONS = [
   { text: "Shorten today's itinerary...", icon: Route, iconColor: 'text-[#C19A6B]' },
-  { text: "Replace today's lunch with a local favorite...", icon: Utensils, iconColor: 'text-[#5FAF8D]' },
+  { text: "Replace today's lunch with something local...", icon: Utensils, iconColor: 'text-[#5FAF8D]' },
+  { text: "Reduce walking distance...", icon: Footprints, iconColor: 'text-[#D97724]' },
+  { text: "Add a coffee stop...", icon: DollarSign, iconColor: 'text-[#5FAF8D]' },
+  { text: "Replace this attraction...", icon: Camera, iconColor: 'text-[#8E2A59]' },
+  { text: "Remove museums...", icon: Landmark, iconColor: 'text-[#C19A6B]' },
   { text: "Rain expected this afternoon. Rearrange the plan?", icon: CloudRain, iconColor: 'text-[#38BDF8]' },
-  { text: "Find a hidden photo spot nearby...", icon: Camera, iconColor: 'text-[#8E2A59]' },
-  { text: "Reduce walking distance today...", icon: Footprints, iconColor: 'text-[#D97724]' },
-  { text: "Save money on today's activities...", icon: DollarSign, iconColor: 'text-[#5FAF8D]' },
-  { text: "Add one more landmark...", icon: Landmark, iconColor: 'text-[#C19A6B]' },
   { text: "Find the best sunset viewpoint...", icon: Sun, iconColor: 'text-[#D97724]' },
 ];
 
@@ -33,7 +36,13 @@ export const AICommandBar: React.FC = () => {
   const [suggestionIndex, setSuggestionIndex] = useState(0);
   const [fade, setFade] = useState(true);
 
-  const { executeAiCommand } = useTravelStore();
+  const { activeTripId } = useTravelStore();
+  const { token } = useAuthStore();
+
+  const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
+  const activeTrip = myTrips.find((t) => String(t.id) === String(activeTripId));
+
+  const regenerateMutation = useAIRegenerateMutation();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -49,21 +58,30 @@ export const AICommandBar: React.FC = () => {
 
   const currentSuggestion = SUGGESTIONS[suggestionIndex];
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     if (!text.trim() || isProcessing) return;
     setIsProcessing(true);
     setAiFeedback(null);
 
-    setTimeout(() => {
-      const resultMsg = executeAiCommand(text);
-      setAiFeedback(resultMsg);
-      setIsProcessing(false);
-      setInput('');
+    const numericTripId = activeTrip ? Number(activeTrip.id) : null;
 
-      setTimeout(() => {
-        setAiFeedback(null);
-      }, 4000);
-    }, 400);
+    if (numericTripId) {
+      try {
+        const res = await regenerateMutation.mutateAsync({ tripId: numericTripId, prompt: text });
+        setAiFeedback(res.modificationSummary || 'AI updated your itinerary with live backend AI recommendations!');
+      } catch (e: any) {
+        setAiFeedback("I wasn't able to modify the itinerary.");
+      }
+    } else {
+      setAiFeedback('Please create or select a journey first.');
+    }
+
+    setIsProcessing(false);
+    setInput('');
+
+    setTimeout(() => {
+      setAiFeedback(null);
+    }, 5000);
   };
 
   const handlePlaceholderClick = () => {
@@ -109,11 +127,11 @@ export const AICommandBar: React.FC = () => {
 
         <button
           onClick={() => handleSend(input || currentSuggestion.text)}
-          disabled={isProcessing}
+          disabled={isProcessing || regenerateMutation.isPending}
           aria-label="Send Concierge Command"
           className="flex items-center justify-center w-7 h-7 rounded-full bg-[#C19A6B] hover:bg-[#A88254] text-white shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
         >
-          {isProcessing ? (
+          {isProcessing || regenerateMutation.isPending ? (
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
           ) : (
             <Send className="w-3.5 h-3.5" />

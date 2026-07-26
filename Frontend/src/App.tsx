@@ -13,9 +13,14 @@ import { TripsModal } from './components/modals/TripsModal';
 import { ExploreModal } from './components/modals/ExploreModal';
 import { ProfileModal } from './components/modals/ProfileModal';
 
+import { useLiveTravelData } from './hooks/useLiveTravelData';
+
 export function App() {
   const { currentView, checkAuth } = useAuthStore();
   const [activeModal, setActiveModal] = useState<'trips' | 'explore' | 'profile' | null>(null);
+
+  // Synchronize live active trip selection with backend API
+  useLiveTravelData();
 
   useEffect(() => {
     checkAuth();
@@ -53,7 +58,7 @@ export function App() {
       <WeatherCard />
 
       {/* 4. Thin Floating Vertical Timeline on Left */}
-      <FloatingTimeline />
+      <FloatingTimeline onOpenCreateTrip={() => setActiveModal('trips')} />
 
       {/* 5. Interactive Activity Detail Side Panel */}
       <ActivityDetailPanel />

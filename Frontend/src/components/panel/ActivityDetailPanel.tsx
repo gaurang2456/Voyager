@@ -13,6 +13,10 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useTravelStore } from '../../store/useTravelStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useMyTripsQuery } from '../../hooks/useTrips';
+import { useItineraryQuery, useRegenerateItineraryMutation } from '../../hooks/useItinerary';
+import { transformItineraryResponseToDays } from '../../api/itinerary';
 import type { ActivityCategory } from '../../types/travel';
 
 const getCategoryStyles = (category: ActivityCategory) => {
@@ -30,29 +34,34 @@ const getCategoryStyles = (category: ActivityCategory) => {
 
 export const ActivityDetailPanel: React.FC = () => {
   const {
-    trips,
     activeTripId,
     activeDayNumber,
     selectedActivityId,
     isPanelOpen,
     setPanelOpen,
-    skipActivity,
-    replaceActivity,
     setHoveredActivity,
   } = useTravelStore();
 
-  const [showMoreDetails, setShowMoreDetails] = useState(false);
-  const [isReplacing, setIsReplacing] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
+  const { token } = useAuthStore();
 
-  const currentTrip = trips.find((t) => t.id === activeTripId);
-  const currentDay = currentTrip?.days.find((d) => d.dayNumber === activeDayNumber);
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [isSkipped, setIsSkipped] = useState(false);
+
+  const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
+  const currentTrip = myTrips.find((t) => String(t.id) === String(activeTripId));
+  const numericTripId = currentTrip ? Number(currentTrip.id) : null;
+
+  const { data: itineraryData } = useItineraryQuery(numericTripId, Boolean(token && numericTripId));
+  const regenerateMutation = useRegenerateItineraryMutation();
+
+  const days = itineraryData ? transformItineraryResponseToDays(itineraryData) : [];
+  const currentDay = days.find((d) => d.dayNumber === activeDayNumber) || days[0];
   const activity = currentDay?.activities.find((a) => a.id === selectedActivityId);
 
   if (!isPanelOpen || !activity) return null;
 
   const categoryStyles = getCategoryStyles(activity.category);
-  const isSkipped = activity.status === 'skipped';
   const isCompleted = activity.status === 'completed';
 
   const handleLaunchExternalMap = () => {
@@ -61,11 +70,12 @@ export const ActivityDetailPanel: React.FC = () => {
   };
 
   const handleReplace = () => {
-    setIsReplacing(true);
-    setTimeout(() => {
-      replaceActivity(activity.id);
-      setIsReplacing(false);
-    }, 400);
+    if (numericTripId) {
+      regenerateMutation.mutate({
+        tripId: numericTripId,
+        prompt: `Replace "${activity.title}" with a fresh local recommendation`,
+      });
+    }
   };
 
   return (
@@ -186,7 +196,7 @@ export const ActivityDetailPanel: React.FC = () => {
           </div>
         )}
 
-        {/* In-App Navigation Active Overlay Panel - Oyster & Camel */}
+        {/* In-App Navigation Active Overlay Panel */}
         {isNavigating ? (
           <div className="p-2.5 rounded-xl bg-[#EAE3D9] border border-[#D4C9BD] flex flex-col gap-2 text-xs animate-fadeIn">
             <div className="flex items-center justify-between font-bold text-[#4A443D]">
@@ -237,37 +247,37 @@ export const ActivityDetailPanel: React.FC = () => {
               <ExternalLink className="w-3 h-3 opacity-60 ml-auto" />
             </button>
 
-          <div className="grid grid-cols-2 gap-1.5">
-            <button
-              onClick={handleReplace}
-              disabled={isReplacing}
-              className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-[#F3EFE8] hover:bg-[#E6DEC9] active:scale-98 text-[#2F2A24] border border-[#E8E2D5] text-xs font-semibold transition-all cursor-pointer"
-            >
-              <RefreshCw className={`w-3 h-3 ${isReplacing ? 'animate-spin' : ''}`} />
-              <span>Replace</span>
-            </button>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                onClick={handleReplace}
+                disabled={regenerateMutation.isPending}
+                className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-[#F3EFE8] hover:bg-[#E6DEC9] active:scale-98 text-[#2F2A24] border border-[#E8E2D5] text-xs font-semibold transition-all cursor-pointer"
+              >
+                <RefreshCw className={`w-3 h-3 ${regenerateMutation.isPending ? 'animate-spin' : ''}`} />
+                <span>Replace</span>
+              </button>
+
+              <button
+                onClick={() => setIsSkipped(!isSkipped)}
+                className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border text-xs font-semibold active:scale-98 transition-all cursor-pointer ${
+                  isSkipped
+                    ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
+                    : 'bg-[#F3EFE8] hover:bg-[#E6DEC9] text-[#2F2A24] border-[#E8E2D5]'
+                }`}
+              >
+                <SkipForward className="w-3 h-3" />
+                <span>{isSkipped ? 'Unskip' : 'Skip'}</span>
+              </button>
+            </div>
 
             <button
-              onClick={() => skipActivity(activity.id)}
-              className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border text-xs font-semibold active:scale-98 transition-all cursor-pointer ${
-                isSkipped
-                  ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
-                  : 'bg-[#F3EFE8] hover:bg-[#E6DEC9] text-[#2F2A24] border-[#E8E2D5]'
-              }`}
+              onClick={() => setShowMoreDetails(!showMoreDetails)}
+              className="w-full flex items-center justify-center gap-1 py-0.5 text-[11px] font-medium text-[#6E665C] hover:text-[#2F2A24] transition-colors cursor-pointer"
             >
-              <SkipForward className="w-3 h-3" />
-              <span>{isSkipped ? 'Unskip' : 'Skip'}</span>
+              <Info className="w-3 h-3" />
+              <span>{showMoreDetails ? 'Less Info' : 'More Details'}</span>
             </button>
           </div>
-
-          <button
-            onClick={() => setShowMoreDetails(!showMoreDetails)}
-            className="w-full flex items-center justify-center gap-1 py-0.5 text-[11px] font-medium text-[#6E665C] hover:text-[#2F2A24] transition-colors cursor-pointer"
-          >
-            <Info className="w-3 h-3" />
-            <span>{showMoreDetails ? 'Less Info' : 'More Details'}</span>
-          </button>
-        </div>
         )}
 
       </div>

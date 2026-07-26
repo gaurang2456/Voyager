@@ -2,7 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTravelStore } from '../../store/useTravelStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useThemeStore } from '../../store/useThemeStore';
+import { useMyTripsQuery } from '../../hooks/useTrips';
+import { useItineraryQuery } from '../../hooks/useItinerary';
+import { transformItineraryResponseToDays } from '../../api/itinerary';
 import { fetchRealRoute } from '../../services/routeService';
 import type { ActivityCategory, Activity } from '../../types/travel';
 
@@ -39,10 +43,6 @@ interface PositionedActivity {
   isOffset: boolean;
 }
 
-/**
- * Calculates spatial offset for activities that are very close to each other
- * to prevent markers from obscuring each other.
- */
 function calculateDeconflictedPositions(activities: Activity[]): PositionedActivity[] {
   const result: PositionedActivity[] = [];
   const processed = new Set<string>();
@@ -51,7 +51,6 @@ function calculateDeconflictedPositions(activities: Activity[]): PositionedActiv
     const act = activities[i];
     if (processed.has(act.id)) continue;
 
-    // Find all activities within ~200 meters threshold (0.002 deg)
     const cluster: Activity[] = [act];
     processed.add(act.id);
 
@@ -74,8 +73,7 @@ function calculateDeconflictedPositions(activities: Activity[]): PositionedActiv
         isOffset: false,
       });
     } else {
-      // Disperse cluster markers in a small circle around original point
-      const radius = 0.0012; // ~120m offset
+      const radius = 0.0012;
       cluster.forEach((item, idx) => {
         const angle = (2 * Math.PI * idx) / cluster.length - Math.PI / 2;
         result.push({
@@ -95,14 +93,11 @@ export const MapView: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
-  const polylineOuterGlowRef = useRef<L.Polyline | null>(null);
-  const polylineGlowRef = useRef<L.Polyline | null>(null);
-  const polylineMainRef = useRef<L.Polyline | null>(null);
+  const activePolylinesRef = useRef<L.Polyline[]>([]);
   const connectorLinesRef = useRef<L.Polyline[]>([]);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
 
   const {
-    trips,
     activeTripId,
     activeDayNumber,
     selectedActivityId,
@@ -112,17 +107,26 @@ export const MapView: React.FC = () => {
     filterCategory,
   } = useTravelStore();
 
+  const { token } = useAuthStore();
   const { theme } = useThemeStore();
 
-  const currentTrip = trips.find((t) => t.id === activeTripId);
-  const currentDay = currentTrip?.days.find((d) => d.dayNumber === activeDayNumber);
+  // Fetch active trip and itinerary via React Query
+  const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
+  const activeTrip = myTrips.find((t) => String(t.id) === String(activeTripId));
+  const numericTripId = activeTrip ? Number(activeTrip.id) : null;
+
+  const { data: itineraryData } = useItineraryQuery(numericTripId, Boolean(token && numericTripId));
+  const days = itineraryData ? transformItineraryResponseToDays(itineraryData) : [];
+
+  // Strictly select ONLY current active day's activities
+  const currentDay = days.find((d) => d.dayNumber === activeDayNumber) || days[0];
 
   const rawActivities = currentDay?.activities || [];
   const activities = filterCategory === 'all'
     ? rawActivities
     : rawActivities.filter((a) => a.category === filterCategory);
 
-  // Initialize Map
+  // Initialize Leaflet Map immediately on render
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -164,27 +168,22 @@ export const MapView: React.FC = () => {
     tileLayerRef.current.setUrl(newTileUrl);
   }, [theme]);
 
-  // Render De-overlapped Markers & Real OSRM Road Route
+  // Render Markers & Real OSRM Road Route ONLY for Current Active Day and Fly Map to Day Route
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    // Clear existing markers & lines
+    let isCancelled = false;
+
+    // 1. Thoroughly remove all existing markers
     Object.values(markersRef.current).forEach((m) => m.remove());
     markersRef.current = {};
 
-    if (polylineOuterGlowRef.current) {
-      polylineOuterGlowRef.current.remove();
-      polylineOuterGlowRef.current = null;
-    }
-    if (polylineGlowRef.current) {
-      polylineGlowRef.current.remove();
-      polylineGlowRef.current = null;
-    }
-    if (polylineMainRef.current) {
-      polylineMainRef.current.remove();
-      polylineMainRef.current = null;
-    }
+    // 2. Thoroughly remove all active polylines (prevents route accumulation across days)
+    activePolylinesRef.current.forEach((line) => line.remove());
+    activePolylinesRef.current = [];
+
+    // 3. Remove connector lines
     connectorLinesRef.current.forEach((line) => line.remove());
     connectorLinesRef.current = [];
 
@@ -199,13 +198,11 @@ export const MapView: React.FC = () => {
       const isHovered = act.id === hoveredActivityId;
       const isCompleted = act.status === 'completed';
       const isCurrent = act.status === 'current' || isSelected;
-      const isSkipped = act.status === 'skipped';
       const colors = getCategoryColor(act.category);
       const iconSvg = getCategoryBadgeSvg(act.category);
 
       boundsLatLngs.push([act.lat, act.lng]);
 
-      // If marker is offset, draw subtle dotted connector to original lat/lng
       if (isOffset) {
         const connector = L.polyline(
           [
@@ -222,7 +219,6 @@ export const MapView: React.FC = () => {
         connectorLinesRef.current.push(connector);
       }
 
-      // Marker HTML representation
       let markerHtml = '';
 
       if (isCompleted) {
@@ -238,7 +234,6 @@ export const MapView: React.FC = () => {
           </div>
         `;
       } else if (isCurrent) {
-        // Glowing pulsing current/selected marker with Eggnog (#F8ECC9)
         markerHtml = `
           <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform scale-110 z-50">
             <div class="absolute -inset-2 rounded-full animate-ping opacity-40" style="background-color: #F8ECC9"></div>
@@ -262,7 +257,6 @@ export const MapView: React.FC = () => {
           </div>
         `;
       } else {
-        // Upcoming route marker with Eggnog (#F8ECC9) pill background
         markerHtml = `
           <div class="group relative flex flex-col items-center cursor-pointer transition-all duration-300 transform ${
             isHovered ? 'scale-110' : ''
@@ -309,51 +303,50 @@ export const MapView: React.FC = () => {
       markersRef.current[act.id] = marker;
     });
 
-    // Fetch and render REAL Road Route via OSRM
+    // Fetch and render REAL Road Route ONLY for current active day's activities
     const waypoints = activities.map((a) => ({ lat: a.lat, lng: a.lng }));
     if (waypoints.length > 1) {
       fetchRealRoute(waypoints).then((routeRes) => {
-        if (!mapRef.current) return;
+        if (isCancelled || !mapRef.current) return;
 
-        // Multi-layer Solid Hazelnut route render:
-        // Layer 1: Soft White outer glow for separation over map features (#FFFFFF, weight 8.0, opacity 0.35)
         const outerGlowPolyline = L.polyline(routeRes.coordinates, {
           color: '#FFFFFF',
           weight: 8.0,
           opacity: 0.35,
           lineCap: 'round',
           lineJoin: 'round',
-        }).addTo(map);
+        }).addTo(mapRef.current);
 
-        // Layer 2: Ambient Cognac halo (#B07A4F, weight 5.8, opacity 0.25)
         const glowPolyline = L.polyline(routeRes.coordinates, {
           color: '#B07A4F',
           weight: 5.8,
           opacity: 0.25,
           lineCap: 'round',
           lineJoin: 'round',
-        }).addTo(map);
+        }).addTo(mapRef.current);
 
-        // Layer 3: Solid Main Hazelnut polyline (#A67C52, weight 3.7, opacity 0.85)
         const mainPolyline = L.polyline(routeRes.coordinates, {
           color: '#A67C52',
           weight: 3.7,
           opacity: 0.85,
           lineCap: 'round',
           lineJoin: 'round',
-        }).addTo(map);
+        }).addTo(mapRef.current);
 
-        polylineOuterGlowRef.current = outerGlowPolyline;
-        polylineGlowRef.current = glowPolyline;
-        polylineMainRef.current = mainPolyline;
+        activePolylinesRef.current.push(outerGlowPolyline, glowPolyline, mainPolyline);
       });
     }
 
+    // Automatically fly camera to fit bounds of selected day's route
     if (boundsLatLngs.length > 0 && !selectedActivityId) {
       const bounds = L.latLngBounds(boundsLatLngs);
-      map.fitBounds(bounds, { padding: [80, 80], maxZoom: 14, animate: true });
+      map.flyToBounds(bounds, { padding: [80, 80], maxZoom: 14, duration: 0.7 });
     }
-  }, [activities, selectedActivityId, hoveredActivityId, setSelectedActivity, setHoveredActivity]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activities, activeDayNumber, selectedActivityId, hoveredActivityId, setSelectedActivity, setHoveredActivity]);
 
   // Smooth map flight on activity select
   useEffect(() => {

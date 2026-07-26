@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { Compass, Luggage, User, Sparkles, ChevronDown, Check, Sun, Moon, Clock, CheckCircle2 } from 'lucide-react';
+import { Luggage, User, Sparkles, ChevronDown, Check, Sun, Moon, Clock } from 'lucide-react';
 import { useTravelStore } from '../../store/useTravelStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useThemeStore } from '../../store/useThemeStore';
+import { useMyTripsQuery } from '../../hooks/useTrips';
+import { useItineraryQuery } from '../../hooks/useItinerary';
+import { transformItineraryResponseToDays } from '../../api/itinerary';
 
 interface TopNavbarProps {
   onOpenTrips: () => void;
@@ -12,11 +15,9 @@ interface TopNavbarProps {
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
   onOpenTrips,
-  onOpenExplore,
   onOpenProfile,
 }) => {
   const {
-    trips,
     activeTripId,
     activeDayNumber,
     setActiveTrip,
@@ -25,12 +26,17 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
     setHoveredActivity,
   } = useTravelStore();
 
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const activeTrip = trips.find((t) => t.id === activeTripId) || trips[0];
-  const currentDay = activeTrip?.days.find((d) => d.dayNumber === activeDayNumber) || activeTrip?.days[0];
+  const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
+  const activeTrip = myTrips.find((t) => String(t.id) === String(activeTripId)) || myTrips[0];
+
+  const numericTripId = activeTripId ? Number(activeTripId) : null;
+  const { data: itineraryData } = useItineraryQuery(numericTripId, Boolean(token && numericTripId));
+  const days = itineraryData ? transformItineraryResponseToDays(itineraryData) : [];
+  const currentDay = days.find((d) => d.dayNumber === activeDayNumber) || days[0];
   const activities = currentDay?.activities || [];
 
   const userInitials = user?.name
@@ -47,59 +53,57 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <span>Voyager</span>
         </div>
 
-        <div className="relative">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            aria-label="Select Trip Destination"
-            className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#EFE8DD] shadow-md shadow-amber-950/5 text-left hover:bg-[#F8F5EF] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#C19A6B]"
-          >
-            <div className="flex flex-col leading-none py-0.5">
-              <span className="font-serif-luxury text-xs font-bold text-[#2F2A24]">{activeTrip.destination}</span>
-              {activeTrip.personalityTags && activeTrip.personalityTags.length > 0 && (
-                <span className="text-[9px] text-amber-800 font-bold mt-0.5 tracking-tight">{activeTrip.personalityTags[0]}</span>
+        {activeTrip && (
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] text-[#2F2A24] text-xs font-bold shadow-md shadow-amber-950/5 hover:bg-[#F3EFE8] transition-all cursor-pointer"
+            >
+              <span className="truncate max-w-[120px]">{activeTrip.destination}</span>
+              {activeTrip.startDate && (
+                <span className="text-[10px] text-slate-400 font-normal hidden lg:inline">
+                  {activeTrip.startDate.substring(0, 7)}
+                </span>
               )}
-            </div>
-            <ChevronDown className="w-3 h-3 text-[#6E665C] shrink-0" />
-          </button>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-          {isDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1.5 w-56 rounded-2xl bg-[#FAF8F3] backdrop-blur-2xl border border-[#EFE8DD] shadow-xl p-1.5 z-50 animate-fadeIn">
-              {trips.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => {
-                    setActiveTrip(t.id);
-                    setIsDropdownOpen(false);
-                  }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-left text-[#2F2A24] hover:bg-[#F3EFE6] transition-colors cursor-pointer"
-                >
-                  <div>
-                    <div className="font-serif-luxury font-bold text-sm flex items-center gap-1">
-                      <span>{t.destination}</span>
-                      <span className="font-sans text-[10px] text-[#6E665C] font-normal">({t.country})</span>
-                    </div>
-                    <div className="text-[10px] text-[#6E665C] font-normal mb-1">{t.dates}</div>
-                    {t.personalityTags && t.personalityTags.length > 0 && (
-                      <div className="flex items-center gap-1 text-[9px] font-bold text-amber-800">
-                        {t.personalityTags.join(' • ')}
-                      </div>
-                    )}
-                  </div>
-                  {t.id === activeTripId && <Check className="w-3.5 h-3.5 text-[#C19A6B] shrink-0" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+            {/* Destination Dropdown */}
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-52 bg-[#FAF8F3] border border-[#E8E2D5] rounded-2xl shadow-xl p-1.5 z-50 text-[#2F2A24] animate-fadeIn">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#A59E93] px-2 py-1">
+                  Switch Journey
+                </div>
+                {myTrips.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      setActiveTrip(String(t.id));
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
+                      String(t.id) === String(activeTripId)
+                        ? 'bg-[#C19A6B]/15 text-[#8E2A59]'
+                        : 'hover:bg-[#F3EFE8] text-[#6E665C]'
+                    }`}
+                  >
+                    <span className="truncate">{t.destination}</span>
+                    {t.startDate && <span className="text-[10px] text-slate-400">{t.startDate}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Center: Premium Horizontal Journey Progress Bar with Rich Tooltips */}
+      {/* Center: Sleek Live Day Progress Tracker Pill (Taupe Palette) */}
       {activities.length > 0 && (
-        <div className="hidden lg:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 text-xs">
-          <span className="text-[10px] font-bold text-[#6E665C] flex items-center gap-1 shrink-0">
-            <Clock className="w-3 h-3 text-[#C19A6B]" />
-            {activities[0].time}
-          </span>
+        <div className="hidden lg:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#FAF8F3]/90 backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-[#6E665C] shrink-0">
+            <Clock className="w-3.5 h-3.5 text-[#C19A6B]" />
+            <span>{activities[0].time}</span>
+          </div>
 
           <div className="flex items-center gap-1.5">
             {activities.map((act, index) => {
@@ -109,31 +113,24 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
               return (
                 <React.Fragment key={act.id}>
-                  {/* Connector Segment */}
                   {index > 0 && (
-                    <div
-                      className={`h-0.5 w-6 rounded-full transition-colors duration-500 ${
-                        isCompleted || (activities[index - 1] && activities[index - 1].status === 'completed')
-                          ? 'bg-emerald-500'
-                          : 'bg-[#E8E2D5]'
-                      }`}
-                    />
+                    <div className={`h-[2px] w-3 rounded-full transition-colors ${
+                      isCompleted ? 'bg-[#5FAF8D]' : 'bg-[#E8E2D5]'
+                    }`} />
                   )}
 
-                  {/* Interactive Step Node & Hover Card */}
                   <div className="relative group">
                     <button
-                      onClick={() => setSelectedActivity(act.id)}
+                      onClick={() => setSelectedActivity(isSelected ? null : act.id)}
                       onMouseEnter={() => setHoveredActivity(act.id)}
                       onMouseLeave={() => setHoveredActivity(null)}
-                      aria-label={`Journey step ${index + 1}: ${act.title}`}
-                      className={`relative w-5.5 h-5.5 rounded-full text-[10px] font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-[#4A443D] text-white shadow-md ring-2 ring-[#5C5346] scale-110 z-10'
+                          ? 'bg-[#8E2A59] text-white ring-2 ring-[#8E2A59]/30 scale-110 shadow-sm'
                           : isCurrent
-                          ? 'bg-[#4A443D] text-white shadow-sm ring-2 ring-[#5C5346]/50 animate-pulse'
+                          ? 'bg-[#4A443D] text-white ring-2 ring-[#4A443D]/30 scale-105'
                           : isCompleted
-                          ? 'bg-[#5FAF8D] text-white shadow-xs'
+                          ? 'bg-[#5FAF8D] text-white'
                           : 'bg-[#EFE8DD] text-[#2F2A24] border border-[#E8E2D5] hover:bg-[#E6DEC9]'
                       }`}
                     >
@@ -179,15 +176,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <span className="hidden sm:inline">Trips</span>
         </button>
 
-        <button
-          onClick={onOpenExplore}
-          aria-label="Explore places"
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-        >
-          <Compass className="w-3.5 h-3.5 text-[#5FAF8D]" />
-          <span className="hidden sm:inline">Explore</span>
-        </button>
-
         {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
@@ -196,20 +184,20 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           className="p-1 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
         >
           {theme === 'dark' ? (
-            <Sun className="w-3.5 h-3.5 text-[#D97724] transition-transform duration-300 rotate-0 hover:rotate-45" />
+            <Sun className="w-3.5 h-3.5 text-amber-400" />
           ) : (
-            <Moon className="w-3.5 h-3.5 text-slate-700 transition-transform duration-300 rotate-0 hover:-rotate-12" />
+            <Moon className="w-3.5 h-3.5 text-slate-600" />
           )}
         </button>
 
-        {/* User Profile Avatar */}
+        {/* User Profile Button */}
         <button
           onClick={onOpenProfile}
           aria-label="User Profile"
-          title={user?.name || 'User Profile'}
-          className="flex items-center justify-center w-6 h-6 rounded-full bg-[#C19A6B] text-white text-[10px] font-bold shadow-xs hover:bg-[#A88254] active:scale-95 transition-all cursor-pointer ml-0.5"
+          title={user?.name || user?.email || 'User Profile'}
+          className="flex items-center justify-center w-6 h-6 rounded-full bg-[#4A443D] text-white font-bold text-[10px] shadow-sm hover:opacity-90 transition-all cursor-pointer shrink-0"
         >
-          {userInitials || <User className="w-3 h-3" />}
+          {userInitials || <User className="w-3 h-3 text-[#FAF8F3]" />}
         </button>
       </nav>
 

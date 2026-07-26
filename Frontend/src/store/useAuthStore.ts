@@ -5,7 +5,8 @@ import {
   getStoredAuthData,
   clearAuthData,
 } from '../services/authService';
-import type { AuthUser, LoginPayload, RegisterPayload } from '../services/authService';
+import type { AuthUser } from '../services/authService';
+import type { LoginRequest, RegisterRequest } from '../types/dto';
 
 export type AuthView = 'landing' | 'login' | 'register' | 'map';
 
@@ -18,8 +19,8 @@ interface AuthState {
 
   setView: (view: AuthView) => void;
   checkAuth: () => boolean;
-  login: (payload: LoginPayload) => Promise<boolean>;
-  register: (payload: RegisterPayload) => Promise<boolean>;
+  login: (payload: LoginRequest) => Promise<boolean>;
+  register: (payload: RegisterRequest) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
 }
@@ -46,7 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return false;
   },
 
-  login: async (payload: LoginPayload) => {
+  login: async (payload: LoginRequest) => {
     set({ isLoading: true, error: null });
     try {
       const result = await loginUser(payload);
@@ -66,7 +67,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  register: async (payload: RegisterPayload) => {
+  register: async (payload: RegisterRequest) => {
     set({ isLoading: true, error: null });
     try {
       await registerUser(payload);

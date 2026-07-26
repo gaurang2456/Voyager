@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, X, Brain } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import { useTravelStore } from '../../store/useTravelStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useMyTripsQuery } from '../../hooks/useTrips';
+import { useWeatherQuery } from '../../hooks/useWeather';
+import { transformForecastToWeatherInfo } from '../../api/weather';
 
 export const AIInsightCard: React.FC = () => {
-  const { trips, activeTripId } = useTravelStore();
+  const { activeTripId } = useTravelStore();
+  const { token } = useAuthStore();
   const [isDismissed, setIsDismissed] = useState(false);
 
-  const currentTrip = trips.find((t) => t.id === activeTripId) || trips[0];
-  const { weather } = currentTrip;
+  const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
+  const currentTrip = myTrips.find((t) => String(t.id) === String(activeTripId));
+  const numericTripId = currentTrip ? Number(currentTrip.id) : null;
 
-  // Reset dismissal if active trip or recommendation changes
+  const { data: weatherData } = useWeatherQuery(numericTripId, Boolean(token && numericTripId));
+  const weather = transformForecastToWeatherInfo(weatherData || []);
+
   useEffect(() => {
     setIsDismissed(false);
   }, [activeTripId, weather.aiRecommendation]);

@@ -1,17 +1,5 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8080/api/auth';
-
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-export interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-}
+import { loginApi, registerApi } from '../api/auth';
+import type { LoginRequest, RegisterRequest } from '../types/dto';
 
 export interface AuthUser {
   name: string;
@@ -26,25 +14,16 @@ export interface AuthResult {
 const TOKEN_KEY = 'voyager_jwt_token';
 const USER_KEY = 'voyager_user_info';
 
-export async function loginUser(payload: LoginPayload): Promise<AuthResult> {
+export async function loginUser(payload: LoginRequest): Promise<AuthResult> {
   try {
-    const response = await axios.post(`${API_BASE_URL}/login`, payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    // Spring Boot endpoint returns the raw JWT token string or JSON object
-    const token = typeof response.data === 'string' ? response.data : response.data.token;
-    
-    // Derive user info from payload or decoded token
+    const token = await loginApi(payload);
     const user: AuthUser = {
       name: payload.email.split('@')[0].replace('.', ' '),
       email: payload.email,
     };
-
     saveAuthData(token, user);
     return { token, user };
   } catch (error: any) {
-    // If backend server is offline/unreachable during demo, provide seamless fallback authentication
     if (!error.response) {
       console.warn('Backend server unreachable, using local fallback authentication');
       const fallbackToken = `mock-jwt-token-${Date.now()}`;
@@ -60,15 +39,12 @@ export async function loginUser(payload: LoginPayload): Promise<AuthResult> {
   }
 }
 
-export async function registerUser(payload: RegisterPayload): Promise<string> {
+export async function registerUser(payload: RegisterRequest): Promise<string> {
   try {
-    const response = await axios.post(`${API_BASE_URL}/register`, payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return typeof response.data === 'string' ? response.data : 'Registration successful';
+    return await registerApi(payload);
   } catch (error: any) {
     if (!error.response) {
-      console.warn('Backend server unreachable, registration registered locally');
+      console.warn('Backend server unreachable, registration recorded locally');
       return 'User registered successfully';
     }
     const message = error.response?.data?.message || error.response?.data || 'Registration failed';

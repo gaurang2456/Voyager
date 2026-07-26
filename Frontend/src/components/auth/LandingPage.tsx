@@ -1,330 +1,269 @@
-import React from 'react';
-import {
-  Sparkles,
-  MapPin,
-  Navigation,
-  Compass,
-  Shield,
-  ArrowRight,
-  Route,
-  Zap,
-  RefreshCw,
-  Clock,
-  DollarSign,
-  CloudSun,
-  ChevronRight,
-  CheckCircle2,
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, ArrowRight, MapPin, Compass, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 
+interface DestinationSlide {
+  id: string;
+  name: string;
+  location: string;
+  imageUrl: string;
+}
+
+const DESTINATIONS: DestinationSlide[] = [
+  {
+    id: 'taj-mahal',
+    name: 'Taj Mahal',
+    location: 'Agra, India',
+    imageUrl: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1920&q=85',
+  },
+  {
+    id: 'santorini',
+    name: 'Santorini',
+    location: 'Cyclades, Greece',
+    imageUrl: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1920&q=85',
+  },
+  {
+    id: 'kyoto',
+    name: 'Fushimi Inari Shrine',
+    location: 'Kyoto, Japan',
+    imageUrl: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1920&q=85',
+  },
+  {
+    id: 'machu-picchu',
+    name: 'Machu Picchu',
+    location: 'Cusco Region, Peru',
+    imageUrl: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=1920&q=85',
+  },
+  {
+    id: 'swiss-alps',
+    name: 'Matterhorn Peak',
+    location: 'Zermatt, Switzerland',
+    imageUrl: 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1920&q=85',
+  },
+  {
+    id: 'paris',
+    name: 'Eiffel Tower',
+    location: 'Paris, France',
+    imageUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1920&q=85',
+  },
+  {
+    id: 'colosseum',
+    name: 'The Colosseum',
+    location: 'Rome, Italy',
+    imageUrl: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1920&q=85',
+  },
+];
+
 export const LandingPage: React.FC = () => {
-  const { setView } = useAuthStore();
+  const { setView, token } = useAuthStore();
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % DESTINATIONS.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentDest = DESTINATIONS[currentSlideIndex];
+
+  const handleStart = () => {
+    if (token) {
+      setView('map');
+    } else {
+      setView('register');
+    }
+  };
 
   return (
-    <div className="relative w-screen h-screen overflow-y-auto bg-slate-950 text-slate-100 font-sans antialiased select-none custom-scrollbar flex flex-col justify-between">
-      {/* Background Ambient Glow Gradients */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-600/10 blur-[140px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-sky-500/10 blur-[140px]" />
-      </div>
-
-      {/* Top Floating Header */}
-      <header className="relative z-20 max-w-6xl w-full mx-auto px-6 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-white font-extrabold text-xs shadow-sm tracking-wide">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
-            <span>Voyager</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setView('login')}
-            className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-900/80 transition-all cursor-pointer"
-          >
-            Sign In
-          </button>
-          <button
-            onClick={() => setView('register')}
-            className="px-4.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1"
-          >
-            <span>Get Started</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="relative z-10 max-w-5xl w-full mx-auto px-6 pt-6 pb-20 space-y-24 my-auto">
+    <div className="relative w-screen h-screen overflow-y-auto bg-[#1E1B18] text-[#FAF8F3] font-sans select-none custom-scrollbar scroll-smooth">
+      
+      {/* SECTION 1: CINEMATIC FULLSCREEN HERO */}
+      <div className="relative w-full h-screen flex flex-col justify-between overflow-hidden">
         
-        {/* SECTION 1: HERO */}
-        <section className="flex flex-col items-center text-center pt-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/90 border border-slate-800/80 text-xs font-semibold text-blue-400 shadow-xs backdrop-blur-xl mb-6 animate-fadeIn">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-            <span>Plan smarter journeys with AI</span>
+        {/* Fullscreen Destination Background Carousel */}
+        {DESTINATIONS.map((dest, idx) => (
+          <div
+            key={dest.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              idx === currentSlideIndex ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
+            }`}
+            style={{
+              transitionProperty: 'opacity, transform',
+              transitionDuration: '1200ms, 10000ms',
+            }}
+          >
+            <img
+              src={dest.imageUrl}
+              alt={dest.name}
+              className="w-full h-full object-cover filter brightness-[0.82] contrast-[1.05]"
+            />
+          </div>
+        ))}
+
+        {/* Warm Sunrise Golden Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1E1B18]/50 via-[#1E1B18]/30 to-[#1E1B18]/90 pointer-events-none z-10" />
+
+        {/* Top Luxury Navigation */}
+        <header className="relative z-20 max-w-7xl w-full mx-auto px-6 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('landing')}>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#2F2A24]/60 backdrop-blur-md border border-[#E8E2D5]/20 text-[#FAF8F3] shadow-lg">
+              <Sparkles className="w-4 h-4 text-[#C19A6B] fill-[#C19A6B]" />
+              <span className="font-serif-luxury font-bold text-sm tracking-wider">Voyager</span>
+            </div>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white max-w-3xl leading-[1.1] mb-6">
-            The map is your <span className="bg-gradient-to-r from-blue-400 to-sky-400 bg-clip-text text-transparent">homepage</span>.
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setView('login')}
+              className="px-5 py-2 rounded-full text-xs font-semibold text-[#FAF8F3]/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer backdrop-blur-sm"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={handleStart}
+              className="px-6 py-2.5 rounded-full bg-[#C19A6B] hover:bg-[#A88254] active:scale-95 text-white font-bold text-xs shadow-xl shadow-amber-950/20 transition-all cursor-pointer flex items-center gap-2"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </header>
+
+        {/* Hero Center Editorial Headline & Single CTA */}
+        <main className="relative z-20 max-w-4xl w-full mx-auto px-6 text-center flex flex-col items-center my-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2F2A24]/60 backdrop-blur-md border border-[#E8E2D5]/20 text-xs font-medium text-[#E8E2D5] mb-8 animate-fadeIn">
+            <Compass className="w-3.5 h-3.5 text-[#5FAF8D]" />
+            <span>Curated Journeys for Extraordinary Explorers</span>
+          </div>
+
+          <h1 className="font-serif-luxury text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[#FAF8F3] leading-[1.1] mb-6 drop-shadow-md">
+            Explore the world, <br />
+            <span className="italic font-normal text-[#E8E2D5]">one body of wanderlust at a time.</span>
           </h1>
 
-          <p className="text-sm md:text-base text-slate-400 max-w-xl leading-relaxed mb-8 font-normal">
-            Voyager intelligently adapts your itinerary using live weather, route optimization, and your personal travel preferences.
+          <p className="text-sm sm:text-base text-[#E8E2D5]/90 max-w-xl font-normal leading-relaxed mb-10 drop-shadow">
+            Every journey begins with curiosity. Discover hand-crafted itineraries, live weather-aware routes, and iconic landmarks tailored to your travel style.
           </p>
 
-          <div className="flex items-center justify-center gap-3.5">
+          <div className="flex items-center justify-center">
             <button
-              onClick={() => setView('register')}
-              className="px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-extrabold text-sm shadow-xl shadow-blue-600/30 transition-all cursor-pointer flex items-center gap-2"
+              onClick={handleStart}
+              className="px-8 py-4 rounded-full bg-[#C19A6B] hover:bg-[#A88254] active:scale-95 text-white font-bold text-sm shadow-2xl shadow-amber-950/40 transition-all cursor-pointer flex items-center gap-3 group"
             >
-              <span>Start Planning Free</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setView('login')}
-              className="px-6 py-3 rounded-full bg-slate-900/80 hover:bg-slate-800/90 active:scale-95 border border-slate-800 text-slate-200 font-bold text-sm backdrop-blur-xl transition-all cursor-pointer"
-            >
-              Sign In
+              <span>Begin Your Journey</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
-        </section>
+        </main>
 
-        {/* SECTION 2: HOW VOYAGER WORKS */}
-        <section className="flex flex-col items-center text-center space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white">How Voyager Works</h2>
-            <p className="text-xs md:text-sm text-slate-400 max-w-md font-normal">Four seamless steps to effortless trip planning</p>
+        {/* Bottom Bar: Destination Badge & Scroll Hint */}
+        <footer className="relative z-20 max-w-7xl w-full mx-auto px-6 py-6 flex items-center justify-between text-xs text-[#E8E2D5]/80">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#2F2A24]/60 backdrop-blur-md border border-[#E8E2D5]/20">
+            <MapPin className="w-3.5 h-3.5 text-[#C19A6B]" />
+            <span className="font-semibold text-white">{currentDest.name}</span>
+            <span className="text-[#E8E2D5]/60">• {currentDest.location}</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-            {/* Step 1 */}
-            <div className="relative p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl flex flex-col items-center text-center gap-3 hover:border-slate-700 transition-all group">
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-sm group-hover:scale-110 transition-transform">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div className="text-xs font-bold text-slate-400">Step 1</div>
-              <h3 className="text-sm font-extrabold text-white">Create Trip</h3>
-              <p className="text-xs text-slate-400 font-normal leading-relaxed">Select your destination and dates in seconds.</p>
+          <a
+            href="#explore-map"
+            className="flex items-center gap-2 text-xs font-semibold hover:text-white transition-colors cursor-pointer"
+          >
+            <span>Scroll to Discover</span>
+            <ChevronDown className="w-4 h-4 animate-bounce text-[#C19A6B]" />
+          </a>
+        </footer>
+      </div>
+
+      {/* SECTION 2: SMOOTH TRANSITION TO VOYAGER MAP CANVAS PREVIEW */}
+      <section id="explore-map" className="relative z-20 bg-[#FAF8F3] text-[#2F2A24] py-24 px-6">
+        <div className="max-w-5xl mx-auto flex flex-col items-center text-center space-y-10">
+          
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F3EFE8] border border-[#E8E2D5] text-xs font-bold text-[#C19A6B]">
+              <Sparkles className="w-3.5 h-3.5 text-[#C19A6B]" />
+              <span>Interactive Travel Canvas</span>
             </div>
 
-            {/* Step 2 */}
-            <div className="relative p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl flex flex-col items-center text-center gap-3 hover:border-slate-700 transition-all group">
-              <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-sm group-hover:scale-110 transition-transform">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div className="text-xs font-bold text-slate-400">Step 2</div>
-              <h3 className="text-sm font-extrabold text-white">AI Generates Route</h3>
-              <p className="text-xs text-slate-400 font-normal leading-relaxed">Intelligent sequencing connects every activity.</p>
-            </div>
+            <h2 className="font-serif-luxury text-3xl sm:text-5xl font-bold tracking-tight text-[#2F2A24]">
+              The Map is Your Gateway
+            </h2>
 
-            {/* Step 3 */}
-            <div className="relative p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl flex flex-col items-center text-center gap-3 hover:border-slate-700 transition-all group">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-sm group-hover:scale-110 transition-transform">
-                <Compass className="w-5 h-5" />
-              </div>
-              <div className="text-xs font-bold text-slate-400">Step 3</div>
-              <h3 className="text-sm font-extrabold text-white">Explore On Map</h3>
-              <p className="text-xs text-slate-400 font-normal leading-relaxed">Real road polylines show your exact path.</p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="relative p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl flex flex-col items-center text-center gap-3 hover:border-slate-700 transition-all group">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-sm group-hover:scale-110 transition-transform">
-                <RefreshCw className="w-5 h-5" />
-              </div>
-              <div className="text-xs font-bold text-slate-400">Step 4</div>
-              <h3 className="text-sm font-extrabold text-white">Refine Instantly</h3>
-              <p className="text-xs text-slate-400 font-normal leading-relaxed">Swap stops or adjust budgets on the fly.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 3: SHOW THE REAL PRODUCT */}
-        <section className="flex flex-col items-center text-center space-y-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Real Product Interface</span>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white">Built for Explorers Who Value Clarity</h2>
-            <p className="text-xs md:text-sm text-slate-400 max-w-md font-normal">A unified interactive canvas connecting map, route, weather, and AI</p>
+            <p className="text-sm text-[#6E665C] max-w-lg mx-auto font-medium leading-relaxed">
+              Experience seamless trip planning where real road polylines, dynamic weather insights, and tailored itineraries converge in perfect harmony.
+            </p>
           </div>
 
-          {/* Realistic Product Interface Mockup */}
-          <div className="relative w-full max-w-4xl rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900/80 backdrop-blur-2xl p-2.5">
-            {/* Browser Top Header */}
-            <div className="flex items-center justify-between px-3 py-2 bg-slate-950/80 rounded-xl border border-slate-800/60 mb-2">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+          {/* Luxury Frame Canvas Preview */}
+          <div
+            onClick={handleStart}
+            className="relative w-full max-w-4xl rounded-3xl overflow-hidden border border-[#E8E2D5] shadow-2xl bg-[#FAF8F3] p-3 cursor-pointer group transition-transform hover:scale-[1.01]"
+          >
+            {/* Window Top Controls */}
+            <div className="flex items-center justify-between px-4 py-2.5 bg-[#F3EFE8] rounded-2xl border border-[#E8E2D5] mb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-400/80" />
+                <span className="w-3 h-3 rounded-full bg-amber-400/80" />
+                <span className="w-3 h-3 rounded-full bg-emerald-400/80" />
               </div>
-              <div className="px-4 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-[10px] text-slate-400 font-mono">
-                app.voyager.com/tokyo-2026
+              <div className="px-5 py-1 rounded-full bg-white border border-[#E8E2D5] text-[11px] font-semibold text-[#6E665C]">
+                voyager.app/mumbai
               </div>
-              <div className="w-10" />
+              <div className="w-12" />
             </div>
 
-            {/* Interactive Mockup Canvas */}
-            <div className="relative h-72 md:h-96 w-full rounded-xl bg-slate-950 overflow-hidden border border-slate-800/60">
-              {/* Map grid lines */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:3rem_3rem]" />
-
-              {/* Weather Pill Mock */}
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur-md flex items-center gap-2">
-                <CloudSun className="w-3.5 h-3.5 text-amber-400" />
-                <span>Tokyo • 22°C Partly Cloudy</span>
-                <span className="text-slate-500">|</span>
-                <span className="text-purple-400 text-[11px]">Outdoor walk retained</span>
+            {/* Canvas Preview Graphic */}
+            <div className="relative h-80 sm:h-96 w-full rounded-2xl overflow-hidden border border-[#E8E2D5] bg-[#FAF8F3] flex items-center justify-center">
+              <img
+                src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1600&q=80"
+                alt="Voyager Map Interface"
+                className="w-full h-full object-cover filter brightness-[0.9] contrast-[1.02] group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1E1B18]/70 via-transparent to-transparent flex flex-col justify-end p-8 text-left text-white">
+                <div className="text-xs uppercase tracking-wider text-[#C19A6B] font-bold">Featured Journey</div>
+                <div className="font-serif-luxury text-2xl font-bold">Mumbai & South Coast Expedition</div>
+                <p className="text-xs text-stone-300 mt-1 max-w-md font-normal">
+                  Gateway of India • Marine Drive Promenade • Bandra Fort • Kala Ghoda District
+                </p>
               </div>
 
-              {/* Timeline Left Floating Sheet Mock */}
-              <div className="absolute top-14 left-4 w-44 rounded-xl bg-slate-900/90 border border-slate-800 p-2.5 shadow-xl hidden sm:block text-left text-[10px]">
-                <div className="font-extrabold text-blue-400 mb-1.5 flex items-center gap-1">
-                  <Compass className="w-3 h-3" /> Today's Journey
-                </div>
-                <div className="space-y-1 text-slate-300 font-semibold">
-                  <div>• 4 Activities</div>
-                  <div>• 12.4 km Distance</div>
-                  <div>• $72 Est. Cost</div>
-                </div>
-              </div>
-
-              {/* Route Polyline Mock */}
-              <svg className="absolute inset-0 w-full h-full stroke-blue-500/80" strokeWidth="3.5" strokeDasharray="6 6" fill="none">
-                <path d="M 140 220 Q 280 120 440 200 T 640 160" />
-              </svg>
-
-              {/* Map Markers Mock */}
-              <div className="absolute top-[50%] left-[18%] px-2.5 py-0.5 rounded-full bg-blue-600 text-white font-extrabold text-[10px] shadow-lg flex items-center gap-1">
-                <span>1</span> <span>Meiji Shrine</span>
-              </div>
-              <div className="absolute top-[40%] left-[45%] px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-extrabold text-[10px] shadow-lg flex items-center gap-1">
-                <span>2</span> <span>Ichiran Ramen</span>
-              </div>
-              <div className="absolute top-[32%] right-[22%] px-2.5 py-0.5 rounded-full bg-purple-600 text-white font-extrabold text-[10px] shadow-lg flex items-center gap-1">
-                <span>3</span> <span>Shibuya Parco</span>
-              </div>
-
-              {/* Activity Detail Right Panel Mock */}
-              <div className="absolute top-14 right-4 w-48 rounded-xl bg-slate-900/90 border border-slate-800 p-3 shadow-xl hidden md:block text-left text-[10px]">
-                <div className="font-extrabold text-white text-xs mb-1">Ichiran Ramen</div>
-                <p className="text-slate-400 leading-tight mb-2">Customizable solo booth ramen with matcha pudding.</p>
-                <div className="w-full py-1 rounded-lg bg-blue-600 text-white font-bold text-center">
-                  Navigate in Maps
-                </div>
-              </div>
-
-              {/* AI Command Bar Bottom Mock */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-4/5 max-w-sm px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 shadow-xl backdrop-blur-md flex items-center gap-2 text-xs text-slate-400">
-                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                <span>Replace today's lunch...</span>
+              {/* Central Play/Explore Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center bg-[#1E1B18]/30 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="px-6 py-3 rounded-full bg-[#C19A6B] text-white font-bold text-xs shadow-2xl flex items-center gap-2">
+                  <span>Open Interactive Map</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
-        </section>
 
-        {/* SECTION 4: WHY VOYAGER */}
-        <section className="flex flex-col items-center text-center space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white">Why Voyager?</h2>
-            <p className="text-xs md:text-sm text-slate-400 max-w-md font-normal">Designed for seamless, intelligent consumer travel</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl text-left space-y-2 hover:border-slate-700 transition-all">
-              <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-sm">
-                🗺️
-              </div>
-              <h3 className="text-sm font-extrabold text-white">Map-First Planning</h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                The map is your homepage. Every stop and route is right in front of you.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl text-left space-y-2 hover:border-slate-700 transition-all">
-              <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-sm">
-                🤖
-              </div>
-              <h3 className="text-sm font-extrabold text-white">AI Itinerary Optimization</h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                Dynamic order adjustments based on proximity and real road distances.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl text-left space-y-2 hover:border-slate-700 transition-all">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm">
-                🌦️
-              </div>
-              <h3 className="text-sm font-extrabold text-white">Weather-Aware Routing</h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                Outdoor walks during clear skies; indoor rainproof swaps when rain arrives.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl text-left space-y-2 hover:border-slate-700 transition-all">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-sm">
-                💰
-              </div>
-              <h3 className="text-sm font-extrabold text-white">Budget Optimization</h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                Real-time spending trackers and instant cost reduction suggestions.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl text-left space-y-2 hover:border-slate-700 transition-all">
-              <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-sm">
-                📍
-              </div>
-              <h3 className="text-sm font-extrabold text-white">Interactive Journey Timeline</h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                Chronological path nodes with bidirectional map cross-highlighting.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl text-left space-y-2 hover:border-slate-700 transition-all">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-sm">
-                🚶
-              </div>
-              <h3 className="text-sm font-extrabold text-white">Smart Route Directions</h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                Realistic OSRM walking and driving directions replacing straight lines.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 5: FINAL CTA */}
-        <section className="flex flex-col items-center text-center p-8 md:p-12 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl backdrop-blur-2xl space-y-6">
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white">
-            Ready for your next journey?
-          </h2>
-          <p className="text-xs md:text-sm text-slate-400 max-w-md font-normal leading-relaxed">
-            Join thousands of travelers planning smarter, weather-aware itineraries today.
-          </p>
-          <div className="flex items-center justify-center gap-3.5">
+          <div className="pt-4">
             <button
-              onClick={() => setView('register')}
-              className="px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-extrabold text-sm shadow-xl shadow-blue-600/30 transition-all cursor-pointer flex items-center gap-2"
+              onClick={handleStart}
+              className="px-8 py-3.5 rounded-full bg-[#2F2A24] hover:bg-[#4A443D] text-[#FAF8F3] font-bold text-xs shadow-xl transition-all cursor-pointer flex items-center gap-2 mx-auto"
             >
-              <span>Start Planning Free</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setView('login')}
-              className="px-6 py-3 rounded-full bg-slate-950 hover:bg-slate-800 active:scale-95 border border-slate-800 text-slate-200 font-bold text-sm backdrop-blur-xl transition-all cursor-pointer"
-            >
-              Sign In
+              <span>Explore All Destinations</span>
+              <ArrowRight className="w-4 h-4 text-[#C19A6B]" />
             </button>
           </div>
-        </section>
+        </div>
+      </section>
 
-      </main>
-
-      {/* Footer */}
-      <footer className="relative z-10 max-w-6xl w-full mx-auto px-6 py-4 border-t border-slate-900 text-center text-xs text-slate-500">
-        © 2026 Voyager. Built with React, Leaflet & Spring Boot.
+      {/* SECTION 3: EDITORIAL FOOTER */}
+      <footer className="bg-[#F3EFE8] border-t border-[#E8E2D5] py-8 px-6 text-center text-xs text-[#6E665C]">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#C19A6B] fill-[#C19A6B]" />
+            <span className="font-serif-luxury font-bold text-sm text-[#2F2A24]">Voyager</span>
+          </div>
+          <div>© 2026 Voyager. Inspired by the spirit of adventure.</div>
+          <div className="flex items-center gap-4 text-[#6E665C] font-semibold">
+            <button onClick={() => setView('login')} className="hover:text-[#2F2A24]">Sign In</button>
+            <button onClick={handleStart} className="hover:text-[#2F2A24]">Create Journey</button>
+          </div>
+        </div>
       </footer>
+
     </div>
   );
 };
