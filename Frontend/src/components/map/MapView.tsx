@@ -105,6 +105,7 @@ export const MapView: React.FC = () => {
     hoveredActivityId,
     setHoveredActivity,
     filterCategory,
+    completedActivityIds,
   } = useTravelStore();
 
   const { token } = useAuthStore();
@@ -196,8 +197,8 @@ export const MapView: React.FC = () => {
     positionedActivities.forEach(({ activity: act, renderLat, renderLng, isOffset }) => {
       const isSelected = act.id === selectedActivityId;
       const isHovered = act.id === hoveredActivityId;
-      const isCompleted = act.status === 'completed';
-      const isCurrent = act.status === 'current' || isSelected;
+      const isCompleted = Boolean(completedActivityIds[act.id]);
+      const isCurrent = (act.status === 'current' || isSelected) && !isCompleted;
       const colors = getCategoryColor(act.category);
       const iconSvg = getCategoryBadgeSvg(act.category);
 
@@ -303,10 +304,13 @@ export const MapView: React.FC = () => {
       markersRef.current[act.id] = marker;
     });
 
-    // Fetch and render REAL Road Route ONLY for current active day's activities
-    const waypoints = activities.map((a) => ({ lat: a.lat, lng: a.lng }));
-    if (waypoints.length > 1) {
-      fetchRealRoute(waypoints).then((routeRes) => {
+    // Fetch and render REAL Road Route ONLY for active non-completed activities (removes completed activity route segment)
+    const activeWaypoints = activities
+      .filter((a) => !Boolean(completedActivityIds[a.id]))
+      .map((a) => ({ lat: a.lat, lng: a.lng }));
+
+    if (activeWaypoints.length > 1) {
+      fetchRealRoute(activeWaypoints).then((routeRes) => {
         if (isCancelled || !mapRef.current) return;
 
         const outerGlowPolyline = L.polyline(routeRes.coordinates, {
@@ -346,7 +350,7 @@ export const MapView: React.FC = () => {
     return () => {
       isCancelled = true;
     };
-  }, [activities, activeDayNumber, selectedActivityId, hoveredActivityId, setSelectedActivity, setHoveredActivity]);
+  }, [activities, activeDayNumber, selectedActivityId, hoveredActivityId, completedActivityIds, setSelectedActivity, setHoveredActivity]);
 
   // Smooth map flight on activity select
   useEffect(() => {

@@ -9,7 +9,7 @@ import { transformForecastToWeatherInfo } from '../../api/weather';
 import { transformItineraryResponseToDays } from '../../api/itinerary';
 
 export const WeatherCard: React.FC = () => {
-  const { activeTripId } = useTravelStore();
+  const { activeTripId, activeDayNumber, setActiveDay } = useTravelStore();
   const { token } = useAuthStore();
 
   const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
@@ -36,8 +36,32 @@ export const WeatherCard: React.FC = () => {
   const remainingBudget = Math.max(0, totalBudget - totalSpent);
 
   return (
-    <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-auto transition-all duration-300">
-      <div className="bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 rounded-full px-3.5 py-1.5 flex items-center gap-2.5 text-xs text-[#2F2A24]">
+    <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center justify-center gap-1.5 transition-all duration-300">
+      
+      {/* 1. Day Selector Bar (Symmetrically Centered at Very Top) */}
+      {days.length > 0 && (
+        <div className="pointer-events-auto flex items-center justify-center gap-1 p-0.5 rounded-full bg-[#FAF8F3]/95 backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 max-w-fit mx-auto transition-all animate-fadeIn">
+          {days.map((day) => {
+            const isActive = day.dayNumber === activeDayNumber;
+            return (
+              <button
+                key={day.dayNumber}
+                onClick={() => setActiveDay(day.dayNumber)}
+                className={`px-3.5 py-0.5 rounded-full text-[11px] transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#4A443D] text-[#FAF8F3] font-extrabold shadow-xs border border-[#5C5346] scale-105'
+                    : 'bg-transparent text-[#6E665C] font-semibold border border-[#E8E2D5]/60 hover:bg-[#EFE8DD] hover:text-[#2F2A24]'
+                }`}
+              >
+                Day {day.dayNumber}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 2. Destination / Weather / Budget Bar (Symmetrically Centered Directly Below Day Bar) */}
+      <div className="pointer-events-auto bg-[#FAF8F3]/95 backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 rounded-full px-3.5 py-1 flex items-center justify-center gap-2.5 text-xs text-[#2F2A24]">
         
         {/* Destination & Dates Chip */}
         <div className="flex items-center gap-1.5 pr-2 border-r border-[#E8E2D5]">
@@ -68,6 +92,7 @@ export const WeatherCard: React.FC = () => {
         </div>
 
       </div>
+
     </div>
   );
 };

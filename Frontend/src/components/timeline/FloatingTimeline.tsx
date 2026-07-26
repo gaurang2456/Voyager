@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Clock, Check, Luggage, Plus, Sparkles } from 'lucide-react';
+import { ChevronDown, Clock, Check, Luggage, Plus } from 'lucide-react';
 import { useTravelStore } from '../../store/useTravelStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useMyTripsQuery } from '../../hooks/useTrips';
@@ -29,16 +29,16 @@ export const FloatingTimeline: React.FC<FloatingTimelineProps> = ({ onOpenCreate
   const {
     activeTripId,
     activeDayNumber,
-    setActiveDay,
     selectedActivityId,
     setSelectedActivity,
     hoveredActivityId,
     setHoveredActivity,
     filterCategory,
+    completedActivityIds,
   } = useTravelStore();
 
   const { token } = useAuthStore();
-  const [routeDistance, setRouteDistance] = useState<number>(0);
+  const [, setRouteDistance] = useState<number>(0);
 
   // 1. Fetch user trips from Spring Boot backend via React Query
   const { data: myTrips = [], isLoading: isTripsLoading } = useMyTripsQuery(Boolean(token));
@@ -113,25 +113,6 @@ export const FloatingTimeline: React.FC<FloatingTimelineProps> = ({ onOpenCreate
   return (
     <div className="absolute top-16 left-4 md:top-28 md:left-5 z-30 flex flex-col gap-2 pointer-events-auto max-w-[185px] sm:max-w-[215px] transition-all">
       
-      {/* Day Selector Pill Bar */}
-      {days.length > 0 && (
-        <div className="flex items-center gap-1 p-1 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5">
-          {days.map((day) => (
-            <button
-              key={day.dayNumber}
-              onClick={() => setActiveDay(day.dayNumber)}
-              className={`flex-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
-                day.dayNumber === activeDayNumber
-                  ? 'bg-[#4A443D] text-white shadow-xs scale-105 border border-[#5C5346]'
-                  : 'text-[#6E665C] hover:bg-[#EFE8DD]'
-              }`}
-            >
-              Day {day.dayNumber}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* Vertical Timeline Container */}
       <div className="bg-[#FAF8F3] backdrop-blur-2xl border border-[#EFE8DD] shadow-lg shadow-amber-950/5 rounded-2xl p-3 max-h-[calc(100vh-160px)] overflow-y-auto custom-scrollbar transition-all duration-300">
         
@@ -160,8 +141,8 @@ export const FloatingTimeline: React.FC<FloatingTimelineProps> = ({ onOpenCreate
             {activities.map((act, index) => {
               const isSelected = act.id === selectedActivityId;
               const isHovered = act.id === hoveredActivityId;
-              const isCompleted = act.status === 'completed';
-              const isCurrent = act.status === 'current' || isSelected;
+              const isCompleted = Boolean(completedActivityIds[act.id] || act.status === 'completed');
+              const isCurrent = (act.status === 'current' || isSelected) && !isCompleted;
               const categoryBorder = getCategoryColorDot(act.category);
 
               return (
@@ -174,7 +155,7 @@ export const FloatingTimeline: React.FC<FloatingTimelineProps> = ({ onOpenCreate
                       isSelected || isCurrent
                         ? 'bg-[#4A443D]/10 border border-[#4A443D] shadow-xs ring-1 ring-[#5C5346]/30'
                         : isCompleted
-                        ? 'bg-[#FAF8F3]/60 border border-[#E8E2D6] opacity-85 hover:opacity-100'
+                        ? 'bg-[#5FAF8D]/10 border border-[#5FAF8D]/30 opacity-90 hover:opacity-100'
                         : isHovered
                         ? 'bg-[#F3EFE6] scale-[1.02]'
                         : 'bg-[#F8F5EF]/60 border border-[#E8E2D6]/80 hover:bg-[#F3EFE6]'
@@ -183,7 +164,7 @@ export const FloatingTimeline: React.FC<FloatingTimelineProps> = ({ onOpenCreate
                     {/* Progress Marker Indicator */}
                     <div className="relative mt-0.5 shrink-0">
                       {isCompleted ? (
-                        <div className="w-5 h-5 rounded-full bg-[#5FAF8D] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                        <div className="w-5 h-5 rounded-full bg-[#5FAF8D] text-white flex items-center justify-center text-[10px] font-bold shadow-xs border border-white">
                           <Check className="w-3 h-3 text-white" />
                         </div>
                       ) : isCurrent ? (
@@ -200,11 +181,13 @@ export const FloatingTimeline: React.FC<FloatingTimelineProps> = ({ onOpenCreate
                     {/* Details: Time & Title */}
                     <div className="flex-1 min-w-0">
                       <div className={`text-[10px] font-bold leading-none ${
-                        isCurrent || isSelected ? 'text-[#4A443D]' : 'text-[#6E665C]'
+                        isCompleted ? 'text-[#5FAF8D]' : isCurrent || isSelected ? 'text-[#4A443D]' : 'text-[#6E665C]'
                       }`}>
-                        {act.time}
+                        {act.time} {isCompleted && '✓'}
                       </div>
-                      <p className="text-xs font-bold text-[#2F2A24] truncate leading-snug mt-0.5">
+                      <p className={`text-xs font-bold truncate leading-snug mt-0.5 ${
+                        isCompleted ? 'text-[#4F9F7F] line-through opacity-85' : 'text-[#2F2A24]'
+                      }`}>
                         {act.title}
                       </p>
                     </div>

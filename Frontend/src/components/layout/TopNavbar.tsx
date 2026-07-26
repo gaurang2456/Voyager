@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { Luggage, User, Sparkles, ChevronDown, Check, Sun, Moon, Clock } from 'lucide-react';
+import { Luggage, User, Sparkles, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useTravelStore } from '../../store/useTravelStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useMyTripsQuery } from '../../hooks/useTrips';
-import { useItineraryQuery } from '../../hooks/useItinerary';
-import { transformItineraryResponseToDays } from '../../api/itinerary';
 
 interface TopNavbarProps {
   onOpenTrips: () => void;
-  onOpenExplore: () => void;
+  onOpenExplore?: () => void;
   onOpenProfile: () => void;
 }
 
@@ -19,11 +17,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 }) => {
   const {
     activeTripId,
-    activeDayNumber,
     setActiveTrip,
-    selectedActivityId,
-    setSelectedActivity,
-    setHoveredActivity,
   } = useTravelStore();
 
   const { user, token } = useAuthStore();
@@ -32,12 +26,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
   const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
   const activeTrip = myTrips.find((t) => String(t.id) === String(activeTripId)) || myTrips[0];
-
-  const numericTripId = activeTripId ? Number(activeTripId) : null;
-  const { data: itineraryData } = useItineraryQuery(numericTripId, Boolean(token && numericTripId));
-  const days = itineraryData ? transformItineraryResponseToDays(itineraryData) : [];
-  const currentDay = days.find((d) => d.dayNumber === activeDayNumber) || days[0];
-  const activities = currentDay?.activities || [];
 
   const userInitials = user?.name
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -96,74 +84,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           </div>
         )}
       </div>
-
-      {/* Center: Sleek Live Day Progress Tracker Pill (Taupe Palette) */}
-      {activities.length > 0 && (
-        <div className="hidden lg:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#FAF8F3]/90 backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5">
-          <div className="flex items-center gap-1 text-[11px] font-bold text-[#6E665C] shrink-0">
-            <Clock className="w-3.5 h-3.5 text-[#C19A6B]" />
-            <span>{activities[0].time}</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {activities.map((act, index) => {
-              const isSelected = selectedActivityId === act.id;
-              const isCompleted = act.status === 'completed';
-              const isCurrent = act.status === 'current';
-
-              return (
-                <React.Fragment key={act.id}>
-                  {index > 0 && (
-                    <div className={`h-[2px] w-3 rounded-full transition-colors ${
-                      isCompleted ? 'bg-[#5FAF8D]' : 'bg-[#E8E2D5]'
-                    }`} />
-                  )}
-
-                  <div className="relative group">
-                    <button
-                      onClick={() => setSelectedActivity(isSelected ? null : act.id)}
-                      onMouseEnter={() => setHoveredActivity(act.id)}
-                      onMouseLeave={() => setHoveredActivity(null)}
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#8E2A59] text-white ring-2 ring-[#8E2A59]/30 scale-110 shadow-sm'
-                          : isCurrent
-                          ? 'bg-[#4A443D] text-white ring-2 ring-[#4A443D]/30 scale-105'
-                          : isCompleted
-                          ? 'bg-[#5FAF8D] text-white'
-                          : 'bg-[#EFE8DD] text-[#2F2A24] border border-[#E8E2D5] hover:bg-[#E6DEC9]'
-                      }`}
-                    >
-                      {isCompleted ? <Check className="w-3 h-3 text-white" /> : index + 1}
-                    </button>
-
-                    {/* Rich Hover Tooltip Card - Taupe */}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex flex-col gap-1 p-2.5 rounded-xl bg-[#4A443D] text-white shadow-2xl text-[10px] whitespace-nowrap pointer-events-none z-50 border border-[#5C5346] animate-fadeIn">
-                      <div className="font-extrabold text-xs text-white max-w-[160px] truncate">{act.title}</div>
-                      <div className="flex items-center justify-between gap-3 text-stone-300">
-                        <span className="font-medium">{act.time}</span>
-                        <span className={`px-1.5 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wide ${
-                          isCompleted
-                            ? 'bg-[#5FAF8D]/20 text-[#5FAF8D] border border-[#5FAF8D]/30'
-                            : isCurrent
-                            ? 'bg-[#4A443D]/20 text-[#C19A6B] border border-[#5C5346]/30'
-                            : 'bg-stone-800 text-stone-300'
-                        }`}>
-                          {act.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </React.Fragment>
-              );
-            })}
-          </div>
-
-          <span className="text-[10px] font-bold text-[#6E665C] shrink-0">
-            {activities[activities.length - 1].time}
-          </span>
-        </div>
-      )}
 
       {/* Right: Minimal Navigation & Theme Toggle */}
       <nav className="flex items-center gap-1 p-0.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 shrink-0">

@@ -37,7 +37,8 @@ export function transformItineraryResponseToDays(itinerary: ItineraryResponse): 
       }
 
       const order = idx + 1;
-      const status: ActivityStatus = order === 1 ? 'completed' : order === 2 ? 'current' : 'upcoming';
+      // Default to 'current' for 1st activity and 'upcoming' for rest — NEVER pre-mark as completed
+      const status: ActivityStatus = order === 1 ? 'current' : 'upcoming';
       const formattedTime = actDto.startTime ? actDto.startTime.substring(0, 5) : '10:00';
 
       return {
