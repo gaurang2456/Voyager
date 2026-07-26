@@ -2,6 +2,7 @@ package dev.kishore.voyager.service.ai;
 
 import dev.kishore.voyager.dto.weather.WeatherForecastDto;
 import dev.kishore.voyager.entity.Trip;
+import dev.kishore.voyager.service.places.RealPlaceDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,74 +10,65 @@ import java.util.List;
 @Component
 public class PromptBuilder {
 
-    public String buildPrompt(Trip trip, List<WeatherForecastDto> weatherForecasts) {
-        return buildPrompt(trip, weatherForecasts, null);
-    }
+    public String buildPrompt(Trip trip, List<RealPlaceDto> candidatePlaces, List<WeatherForecastDto> weatherForecasts, String userInstruction) {
+        String destName = trip.getDestination() != null ? trip.getDestination() : "Destination";
 
-    public String buildPrompt(Trip trip, List<WeatherForecastDto> weatherForecasts, String userInstruction) {
+        StringBuilder placesListText = new StringBuilder();
+        placesListText.append("CANDIDATE GOOGLE PLACES IN ").append(destName.toUpperCase()).append(":\n");
+        for (int i = 0; i < candidatePlaces.size(); i++) {
+            RealPlaceDto p = candidatePlaces.get(i);
+            placesListText.append(String.format(
+                    "- placeId: \"%s\" | Name: \"%s\" | Category: %s | Rating: %.1f\n",
+                    p.getPlaceId(), p.getName(), p.getCategory(), p.getRating()
+            ));
+        }
+
         StringBuilder weatherSummary = new StringBuilder();
         if (weatherForecasts != null && !weatherForecasts.isEmpty()) {
-            weatherSummary.append("Weather Forecast Summary:\n");
+            weatherSummary.append("\nWeather Summary:\n");
             for (WeatherForecastDto w : weatherForecasts) {
                 weatherSummary.append(String.format(
-                        "- Date: %s | Condition: %s | Temp: %.1f°C - %.1f°C | Rain Chance: %d%% | Wind: %.1f km/h | Humidity: %d%%\n",
-                        w.getDate(), w.getCondition(), w.getMinTemperature(), w.getMaxTemperature(),
-                        w.getChanceOfRain(), w.getWindSpeed(), w.getHumidity()
+                        "- Date: %s | Condition: %s | Rain Chance: %d%%\n",
+                        w.getDate(), w.getCondition(), w.getChanceOfRain()
                 ));
             }
-            weatherSummary.append("\nINSTRUCTION: Adjust scheduled activities according to the weather. If rain chance is high (>50%) or weather is poor, PREFER indoor attractions, museums, or covered venues over open outdoor beaches/parks.\n\n");
-        } else {
-            weatherSummary.append("Weather Forecast Summary: Not available.\n\n");
         }
 
         if (userInstruction != null && !userInstruction.isBlank()) {
-            weatherSummary.append("USER CUSTOM INSTRUCTION / MODIFICATION REQUEST:\n");
-            weatherSummary.append("\"").append(userInstruction).append("\"\n");
-            weatherSummary.append("Please strictly apply this custom user request to tailor the itinerary activities.\n\n");
+            weatherSummary.append("\nUser Request: \"").append(userInstruction).append("\"\n");
         }
 
-        String destName = trip.getDestination() != null ? trip.getDestination() : "Destination";
-
         return """
-                You are an expert travel planner.
+                You are a travel itinerary optimizer for Voyager.
                 
-                Create a comprehensive, structured travel itinerary.
+                STRICT MANDATE:
+                1. You MUST select activities ONLY from the provided candidate 'placeId' list below.
+                2. Do NOT invent, fabricate, or output any place names, coordinates, or costs.
+                3. Your response MUST reference candidate places ONLY by their exact 'placeId' string.
                 
-                Trip Details:
-                - Title: %s
-                - Destination: %s
-                - Description: %s
-                - Start Date: %s
-                - End Date: %s
-                - Budget: %s %s
-                
-                CRITICAL DESTINATION GEOCODING & CITY RESOLUTION RULES:
-                1. Always resolve "%s" as an administrative CITY/MUNICIPALITY (e.g. Mumbai, Maharashtra, India; Delhi, India; Paris, France; Tokyo, Japan).
-                2. NEVER resolve the trip destination to a shop, restaurant, hotel, or business named after the city.
-                3. ALL activity latitudes and longitudes MUST be accurate geographic coordinates located within a 15km radius of the administrative city center of %s.
+                Destination: %s
+                Trip Dates: %s to %s
+                Budget: %s %s
                 
                 %s
-                CRITICAL: You MUST return ONLY valid JSON matching the exact structure below. Do NOT wrap in markdown code blocks like ```json ... ``` or include any conversational intro/outro text.
                 
-                JSON Format:
+                %s
+                
+                OUTPUT FORMAT (JSON ONLY):
+                Return ONLY valid JSON matching the exact structure below. Do NOT wrap in markdown code blocks.
+                
                 {
                   "days": [
                     {
                       "dayNumber": 1,
                       "date": "%s",
-                      "summary": "Brief day summary",
-                      "notes": "Day tips or notes",
+                      "summary": "Day 1 Summary",
+                      "notes": "Tips for Day 1",
                       "activities": [
                         {
-                          "title": "Activity Title",
-                          "description": "Activity description",
-                          "startTime": "09:00:00",
-                          "endTime": "11:00:00",
-                          "estimatedCost": 25.50,
-                          "latitude": 19.0760,
-                          "longitude": 72.8777,
-                          "placeId": "place_id_string",
-                          "category": "Sightseeing"
+                          "placeId": "place-ktm-boudha",
+                          "startTime": "09:30:00",
+                          "endTime": "11:30:00"
                         }
                       ]
                     }
@@ -84,15 +76,12 @@ public class PromptBuilder {
                 }
                 """
                 .formatted(
-                        trip.getTitle() != null ? trip.getTitle() : "Trip",
                         destName,
-                        trip.getDescription() != null ? trip.getDescription() : "Vacation",
                         trip.getStartDate() != null ? trip.getStartDate().toString() : "N/A",
                         trip.getEndDate() != null ? trip.getEndDate().toString() : "N/A",
                         trip.getBudget() != null ? trip.getBudget().toString() : "0",
                         trip.getCurrency() != null ? trip.getCurrency() : "USD",
-                        destName,
-                        destName,
+                        placesListText.toString(),
                         weatherSummary.toString(),
                         trip.getStartDate() != null ? trip.getStartDate().toString() : "2026-10-12"
                 );

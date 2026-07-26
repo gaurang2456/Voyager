@@ -12,6 +12,7 @@ import dev.kishore.voyager.repository.TripRepository;
 import dev.kishore.voyager.repository.UserRepository;
 import dev.kishore.voyager.service.weather.WeatherService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ItineraryService {
@@ -67,14 +69,45 @@ public class ItineraryService {
         return response;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ItineraryResponse getItinerary(Long tripId) {
         User user = getCurrentUser();
         Itinerary itinerary = itineraryRepository
                 .findTopByTripIdAndTripUserEmailOrderByVersionDesc(tripId, user.getEmail())
                 .orElseThrow(() -> new RuntimeException("Itinerary not found for trip: " + tripId));
 
+        if (hasLegacyGenericTitles(itinerary)) {
+            log.info("Auto-upgrading legacy generic itinerary in MySQL for trip ID {} to ground-truth Google Places engine...", tripId);
+            return regenerateItinerary(tripId, null);
+        }
+
         return itineraryMapper.toResponse(itinerary);
+    }
+
+    private boolean hasLegacyGenericTitles(Itinerary itinerary) {
+        if (itinerary == null || itinerary.getDays() == null) return false;
+        for (var day : itinerary.getDays()) {
+            if (day.getActivities() != null) {
+                for (var act : day.getActivities()) {
+                    if (act.getTitle() != null) {
+                        String titleLower = act.getTitle().toLowerCase();
+                        if (titleLower.contains("historic old town") ||
+                            titleLower.contains("heritage plaza") ||
+                            titleLower.contains("artisanal regional bistro") ||
+                            titleLower.contains("riverside promenade") ||
+                            titleLower.contains("panorama tower") ||
+                            titleLower.contains("citadel") ||
+                            titleLower.contains("conservatory & meadow") ||
+                            titleLower.contains("culinary bazaar") ||
+                            titleLower.contains("sunset deck") ||
+                            titleLower.contains("royal citadel")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Transactional
