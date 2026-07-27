@@ -45,6 +45,7 @@ public class PromptBuilder {
                 1. You MUST select activities ONLY from the provided candidate 'placeId' list below.
                 2. Do NOT invent, fabricate, or output any place names, coordinates, or costs.
                 3. Your response MUST reference candidate places ONLY by their exact 'placeId' string.
+                4. CRITICAL UNIQUE PLACES MANDATE: Do NOT repeat any placeId or venue. Every activity across all days MUST have a UNIQUE placeId. Each candidate placeId must be used AT MOST ONCE across the entire trip.
                 
                 Destination: %s
                 Trip Dates: %s to %s

@@ -189,11 +189,6 @@ export const MapView: React.FC = () => {
   const { token } = useAuthStore();
   const { theme } = useThemeStore();
 
-  // Reset user zoom override when active day or trip changes
-  useEffect(() => {
-    userHasZoomedRef.current = false;
-  }, [activeDayNumber, activeTripId]);
-
   // Fetch active trip and itinerary via React Query
   const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
   const activeTrip = myTrips.find((t) => String(t.id) === String(activeTripId));
@@ -235,8 +230,10 @@ export const MapView: React.FC = () => {
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     // Track user manual zoom/pan so auto camera flight doesn't override manual zoom
-    map.on('zoomstart dragstart', () => {
-      userHasZoomedRef.current = true;
+    map.on('zoomstart dragstart touchstart', (e: any) => {
+      if (e && e.originalEvent) {
+        userHasZoomedRef.current = true;
+      }
     });
 
     mapRef.current = map;
@@ -326,7 +323,8 @@ export const MapView: React.FC = () => {
       marker.on('click', (e) => {
         L.DomEvent.stopPropagation(e);
         setSelectedActivity(act.id);
-        map.flyTo([act.lat, act.lng], 15, { duration: 0.5, easeLinearity: 0.25 });
+        const targetZoom = Math.max(map.getZoom(), 14);
+        map.flyTo([act.lat, act.lng], targetZoom, { duration: 0.5, easeLinearity: 0.25 });
       });
 
       marker.on('mouseover', () => setHoveredActivity(act.id));
@@ -396,7 +394,8 @@ export const MapView: React.FC = () => {
     if (!selectedActivityId || !mapRef.current) return;
     const selectedAct = activities.find((a) => a.id === selectedActivityId);
     if (selectedAct) {
-      mapRef.current.flyTo([selectedAct.lat, selectedAct.lng], 15, {
+      const targetZoom = Math.max(mapRef.current.getZoom(), 14);
+      mapRef.current.flyTo([selectedAct.lat, selectedAct.lng], targetZoom, {
         duration: 0.5,
         easeLinearity: 0.3,
       });
