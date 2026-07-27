@@ -14,6 +14,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(PlacesServiceException.class)
+    public ResponseEntity<?> handlePlacesServiceException(PlacesServiceException ex) {
+        log.error("Google Places API error: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
+                "success", false,
+                "timestamp", LocalDateTime.now().toString(),
+                "status", 503,
+                "error", "Service Unavailable",
+                "message", ex.getMessage() != null ? ex.getMessage() : "Unable to retrieve places for this destination."
+        ));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleAllExceptions(Exception ex) {
         log.error("Backend Exception encountered: {}", ex.getMessage(), ex);

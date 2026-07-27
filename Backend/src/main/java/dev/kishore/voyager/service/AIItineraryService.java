@@ -10,7 +10,8 @@ import dev.kishore.voyager.dto.ai.GeminiSelectionDtos.GeminiItinerarySelectionDt
 import dev.kishore.voyager.dto.weather.WeatherForecastDto;
 import dev.kishore.voyager.entity.Trip;
 import dev.kishore.voyager.service.ai.PromptBuilder;
-import dev.kishore.voyager.service.places.PlacesService;
+import dev.kishore.voyager.exception.PlacesServiceException;
+import dev.kishore.voyager.service.places.GooglePlacesService;
 import dev.kishore.voyager.service.places.RealPlaceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public class AIItineraryService {
     private final ChatClient chatClient;
     private final PromptBuilder promptBuilder;
     private final ObjectMapper objectMapper;
-    private final PlacesService placesService;
+    private final GooglePlacesService googlePlacesService;
 
     public GeneratedItineraryDto generateItineraryDto(Trip trip, List<WeatherForecastDto> weatherForecasts) {
         return generateItineraryDto(trip, weatherForecasts, null);
@@ -43,14 +44,14 @@ public class AIItineraryService {
     public GeneratedItineraryDto generateItineraryDto(Trip trip, List<WeatherForecastDto> weatherForecasts, String userInstruction) {
         String dest = trip.getDestination() != null ? trip.getDestination() : "Kathmandu";
 
-        // STEP 1: Query Google Places API / PlacesService FIRST!
-        List<RealPlaceDto> candidatePlaces = placesService.getRealPlacesForDestination(dest);
+        // STEP 1: Query Google Places API (New) FIRST via GooglePlacesService!
+        List<RealPlaceDto> candidatePlaces = googlePlacesService.getRealPlacesForDestination(dest);
         Map<String, RealPlaceDto> placeMap = candidatePlaces.stream()
                 .collect(java.util.stream.Collectors.toMap(RealPlaceDto::getPlaceId, p -> p, (a, b) -> a));
 
         GeneratedItineraryDto dto;
         try {
-            // STEP 2: Pass retrieved places to PromptBuilder
+            // STEP 2: Pass retrieved authentic places to PromptBuilder
             String prompt = promptBuilder.buildPrompt(trip, candidatePlaces, weatherForecasts, userInstruction);
             log.info("Sending placeId-constrained prompt to Gemini for trip ID {}: {}", trip.getId(), prompt);
 
@@ -61,10 +62,10 @@ public class AIItineraryService {
             log.info("Received placeId selection response for trip ID {}: {}", trip.getId(), rawContent);
             GeminiItinerarySelectionDto selection = parseSelectionResponse(rawContent);
 
-            // STEP 3: Populate official name, coordinates, category, cost directly from Places API data!
+            // STEP 3: Populate metadata directly from real Google Places API data!
             dto = populateMetadataFromPlaces(trip, selection, placeMap, candidatePlaces);
         } catch (Exception e) {
-            log.error("AI Generation failed/timed out for trip ID {} (Destination: {}): {}. Falling back to Places API pipeline.",
+            log.warn("AI Selection failed/timed out for trip ID {} (Destination: {}): {}. Falling back directly to authentic Google Places pool.",
                     trip.getId(), trip.getDestination(), e.getMessage());
             dto = generateFallbackFromPlaces(trip, candidatePlaces);
         }
@@ -114,7 +115,9 @@ public class AIItineraryService {
         }
 
         java.util.Set<String> usedPlaceIds = new java.util.HashSet<>();
-        int fallbackIdx = 0;
+        java.util.Set<String> usedPlaceNames = new java.util.HashSet<>();
+        int fallbackIndex = 0;
+
         for (int dayIdx = 0; dayIdx < selection.getDays().size(); dayIdx++) {
             GeminiDaySelectionDto daySel = selection.getDays().get(dayIdx);
             LocalDate currentDate = startDate.plusDays(dayIdx);
@@ -125,33 +128,21 @@ public class AIItineraryService {
                     GeminiActivitySelectionDto actSel = daySel.getActivities().get(actIdx);
                     RealPlaceDto place = placeMap.get(actSel.getPlaceId());
 
-                    // Guarantee valid AND unique place reference
-                    if (place == null || usedPlaceIds.contains(place.getPlaceId())) {
-                        final int curFallback = fallbackIdx;
-                        place = candidatePlaces.stream()
-                                .filter(p -> !usedPlaceIds.contains(p.getPlaceId()))
-                                .findFirst()
-                                .orElseGet(() -> candidatePlaces.get(curFallback % candidatePlaces.size()));
-                        fallbackIdx++;
+                    if (place == null || usedPlaceIds.contains(place.getPlaceId()) || usedPlaceNames.contains(place.getName().toLowerCase())) {
+                        place = getOrReuseCandidatePlace(candidatePlaces, usedPlaceIds, usedPlaceNames, null, fallbackIndex++);
+                    } else {
+                        usedPlaceIds.add(place.getPlaceId());
+                        usedPlaceNames.add(place.getName().toLowerCase());
                     }
 
-                    if (place != null) {
-                        usedPlaceIds.add(place.getPlaceId());
-                        LocalTime start = parseTime(actSel.getStartTime(), LocalTime.of(9 + (actIdx * 3), 30));
-                        LocalTime end = parseTime(actSel.getEndTime(), start.plusHours(2));
-                        activities.add(createActivityFromRealPlace(place, start, end));
-                    }
+                    LocalTime start = parseTime(actSel.getStartTime(), LocalTime.of(9 + (actIdx * 3), 30));
+                    LocalTime end = parseTime(actSel.getEndTime(), start.plusHours(2));
+                    activities.add(createActivityFromRealPlace(place, start, end));
                 }
             }
 
             if (activities.isEmpty()) {
-                final int curFallback = fallbackIdx;
-                RealPlaceDto p1 = candidatePlaces.stream()
-                        .filter(p -> !usedPlaceIds.contains(p.getPlaceId()))
-                        .findFirst()
-                        .orElseGet(() -> candidatePlaces.get(curFallback % candidatePlaces.size()));
-                fallbackIdx++;
-                usedPlaceIds.add(p1.getPlaceId());
+                RealPlaceDto p1 = getOrReuseCandidatePlace(candidatePlaces, usedPlaceIds, usedPlaceNames, null, fallbackIndex++);
                 activities.add(createActivityFromRealPlace(p1, LocalTime.of(9, 30), LocalTime.of(11, 30)));
             }
 
@@ -167,6 +158,42 @@ public class AIItineraryService {
         return GeneratedItineraryDto.builder().days(dayDtos).build();
     }
 
+    private RealPlaceDto getOrReuseCandidatePlace(
+            List<RealPlaceDto> candidatePlaces,
+            java.util.Set<String> usedPlaceIds,
+            java.util.Set<String> usedPlaceNames,
+            String preferredCategory,
+            int fallbackIndex
+    ) {
+        if (candidatePlaces == null || candidatePlaces.isEmpty()) {
+            throw new PlacesServiceException("No authentic Google Places available for this destination.");
+        }
+
+        RealPlaceDto place = candidatePlaces.stream()
+                .filter(p -> (preferredCategory == null || preferredCategory.equalsIgnoreCase(p.getCategory()))
+                        && !usedPlaceIds.contains(p.getPlaceId())
+                        && !usedPlaceNames.contains(p.getName().toLowerCase()))
+                .findFirst()
+                .orElse(null);
+
+        if (place == null && preferredCategory != null) {
+            place = candidatePlaces.stream()
+                    .filter(p -> !usedPlaceIds.contains(p.getPlaceId())
+                            && !usedPlaceNames.contains(p.getName().toLowerCase()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        // If all unique places are exhausted for a long trip, reuse an existing candidate place (never invent fictional places)
+        if (place == null) {
+            place = candidatePlaces.get(fallbackIndex % candidatePlaces.size());
+        }
+
+        usedPlaceIds.add(place.getPlaceId());
+        usedPlaceNames.add(place.getName().toLowerCase());
+        return place;
+    }
+
     public GeneratedItineraryDto applyUserInstruction(GeneratedItineraryDto dto, Trip trip, List<RealPlaceDto> candidatePlaces, String userInstruction) {
         if (dto == null || userInstruction == null || userInstruction.isBlank()) return dto;
 
@@ -178,14 +205,22 @@ public class AIItineraryService {
         if (activities == null || activities.isEmpty()) return dto;
 
         if (lower.contains("lunch") || lower.contains("food") || lower.contains("local")) {
-            RealPlaceDto foodPlace = candidatePlaces.stream()
-                    .filter(p -> "Food".equalsIgnoreCase(p.getCategory()))
-                    .findFirst()
-                    .orElse(candidatePlaces.get(0));
+            java.util.Set<String> usedPlaceIds = new java.util.HashSet<>();
+            java.util.Set<String> usedPlaceNames = new java.util.HashSet<>();
+            for (var day : dto.getDays()) {
+                if (day.getActivities() != null) {
+                    for (var act : day.getActivities()) {
+                        if (act.getPlaceId() != null) usedPlaceIds.add(act.getPlaceId());
+                        if (act.getTitle() != null) usedPlaceNames.add(act.getTitle().toLowerCase());
+                    }
+                }
+            }
+
+            RealPlaceDto foodPlace = getOrReuseCandidatePlace(candidatePlaces, usedPlaceIds, usedPlaceNames, "Food", 0);
 
             int replaceIdx = activities.size() > 1 ? 1 : 0;
             activities.set(replaceIdx, createActivityFromRealPlace(foodPlace, LocalTime.of(12, 30), LocalTime.of(14, 0)));
-            dto.setModificationSummary("Updated lunch stop to real Google Places POI: " + foodPlace.getName() + ".");
+            dto.setModificationSummary("Updated lunch stop to authentic Google Places POI: " + foodPlace.getName() + ".");
         } else if (lower.contains("walking") || lower.contains("distance") || lower.contains("reduce")) {
             double baseLat = activities.get(0).getLatitude() != null ? activities.get(0).getLatitude() : 27.7172;
             double baseLng = activities.get(0).getLongitude() != null ? activities.get(0).getLongitude() : 85.3240;
@@ -208,47 +243,27 @@ public class AIItineraryService {
         LocalDate endDate = trip.getEndDate() != null ? trip.getEndDate() : startDate.plusDays(2);
         long daysCount = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
         if (daysCount < 1) daysCount = 1;
-        if (daysCount > 7) daysCount = 7;
+        if (daysCount > 14) daysCount = 14;
 
         List<GeneratedItineraryDayDto> dayDtos = new ArrayList<>();
         java.util.Set<String> usedPlaceIds = new java.util.HashSet<>();
-        int placeIndex = 0;
+        java.util.Set<String> usedPlaceNames = new java.util.HashSet<>();
+        int fallbackIdx = 0;
 
         for (int i = 1; i <= daysCount; i++) {
             LocalDate currentDate = startDate.plusDays(i - 1);
             List<GeneratedActivityDto> activities = new ArrayList<>();
 
             // Morning
-            final int pIdx1 = placeIndex;
-            RealPlaceDto morningPoi = realPlaces.stream()
-                    .filter(p -> !usedPlaceIds.contains(p.getPlaceId()))
-                    .findFirst()
-                    .orElseGet(() -> realPlaces.get(pIdx1 % realPlaces.size()));
-            placeIndex++;
-            usedPlaceIds.add(morningPoi.getPlaceId());
+            RealPlaceDto morningPoi = getOrReuseCandidatePlace(realPlaces, usedPlaceIds, usedPlaceNames, "Sightseeing", fallbackIdx++);
             activities.add(createActivityFromRealPlace(morningPoi, LocalTime.of(9, 30), LocalTime.of(11, 30)));
 
             // Afternoon Lunch
-            final int pIdx2 = placeIndex;
-            RealPlaceDto lunchPoi = realPlaces.stream()
-                    .filter(p -> "Food".equalsIgnoreCase(p.getCategory()) && !usedPlaceIds.contains(p.getPlaceId()))
-                    .findFirst()
-                    .orElseGet(() -> realPlaces.stream()
-                            .filter(p -> !usedPlaceIds.contains(p.getPlaceId()))
-                            .findFirst()
-                            .orElseGet(() -> realPlaces.get(pIdx2 % realPlaces.size())));
-            placeIndex++;
-            usedPlaceIds.add(lunchPoi.getPlaceId());
+            RealPlaceDto lunchPoi = getOrReuseCandidatePlace(realPlaces, usedPlaceIds, usedPlaceNames, "Food", fallbackIdx++);
             activities.add(createActivityFromRealPlace(lunchPoi, LocalTime.of(12, 30), LocalTime.of(14, 0)));
 
             // Evening
-            final int pIdx3 = placeIndex;
-            RealPlaceDto eveningPoi = realPlaces.stream()
-                    .filter(p -> !usedPlaceIds.contains(p.getPlaceId()))
-                    .findFirst()
-                    .orElseGet(() -> realPlaces.get(pIdx3 % realPlaces.size()));
-            placeIndex++;
-            usedPlaceIds.add(eveningPoi.getPlaceId());
+            RealPlaceDto eveningPoi = getOrReuseCandidatePlace(realPlaces, usedPlaceIds, usedPlaceNames, "Culture", fallbackIdx++);
             activities.add(createActivityFromRealPlace(eveningPoi, LocalTime.of(15, 30), LocalTime.of(18, 0)));
 
             dayDtos.add(GeneratedItineraryDayDto.builder()

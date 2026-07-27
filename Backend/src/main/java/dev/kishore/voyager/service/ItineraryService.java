@@ -76,12 +76,35 @@ public class ItineraryService {
                 .findTopByTripIdAndTripUserEmailOrderByVersionDesc(tripId, user.getEmail())
                 .orElseThrow(() -> new RuntimeException("Itinerary not found for trip: " + tripId));
 
-        if (hasLegacyGenericTitles(itinerary)) {
-            log.info("Auto-upgrading legacy generic itinerary in MySQL for trip ID {} to ground-truth Google Places engine...", tripId);
+        if (hasDuplicatePlaces(itinerary) || hasLegacyGenericTitles(itinerary)) {
+            log.info("Auto-upgrading itinerary with repeating places in MySQL for trip ID {}...", tripId);
             return regenerateItinerary(tripId, null);
         }
 
         return itineraryMapper.toResponse(itinerary);
+    }
+
+    private boolean hasDuplicatePlaces(Itinerary itinerary) {
+        if (itinerary == null || itinerary.getDays() == null) return false;
+        java.util.Set<String> seenIdentifiers = new java.util.HashSet<>();
+        for (var day : itinerary.getDays()) {
+            if (day.getActivities() != null) {
+                for (var act : day.getActivities()) {
+                    String placeId = act.getPlaceId();
+                    String title = act.getTitle() != null ? act.getTitle().toLowerCase().trim() : null;
+
+                    if (placeId != null && !placeId.isBlank()) {
+                        if (seenIdentifiers.contains(placeId)) return true;
+                        seenIdentifiers.add(placeId);
+                    }
+                    if (title != null && !title.isBlank()) {
+                        if (seenIdentifiers.contains(title)) return true;
+                        seenIdentifiers.add(title);
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private boolean hasLegacyGenericTitles(Itinerary itinerary) {

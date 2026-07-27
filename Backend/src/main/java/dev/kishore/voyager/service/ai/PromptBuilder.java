@@ -42,10 +42,13 @@ public class PromptBuilder {
                 You are a travel itinerary optimizer for Voyager.
                 
                 STRICT MANDATE:
-                1. You MUST select activities ONLY from the provided candidate 'placeId' list below.
-                2. Do NOT invent, fabricate, or output any place names, coordinates, or costs.
-                3. Your response MUST reference candidate places ONLY by their exact 'placeId' string.
-                4. CRITICAL UNIQUE PLACES MANDATE: Do NOT repeat any placeId or venue. Every activity across all days MUST have a UNIQUE placeId. Each candidate placeId must be used AT MOST ONCE across the entire trip.
+                1. Use ONLY the supplied candidate places provided in the list below.
+                2. NEVER invent, fabricate, or hallucinate attractions or locations under any circumstances.
+                3. NEVER rename attractions or modify attraction names.
+                4. NEVER merge multiple attractions into one.
+                5. Preserve the exact Google Place ID string for every selected attraction.
+                6. If there are insufficient places for the trip duration, reuse existing candidate places from the list rather than generating fictional ones.
+                7. Return valid JSON only matching the schema below.
                 
                 Destination: %s
                 Trip Dates: %s to %s

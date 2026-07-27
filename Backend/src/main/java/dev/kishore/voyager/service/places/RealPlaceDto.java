@@ -20,4 +20,6 @@ public class RealPlaceDto {
     private double rating;
     private BigDecimal estimatedCost;
     private String description;
+    private String formattedAddress;
+    private String priceLevel;
 }
