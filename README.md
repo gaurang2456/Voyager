@@ -31,7 +31,8 @@ https://voyager-3pd4.vercel.app/
 ## Landing Page
 
 <p align="center">
-<img src="Screenshot 2026-07-29 010756.png.png" width="900"/>
+<img width="1917" height="1097" alt="Screenshot 2026-07-29 010756" src="https://github.com/user-attachments/assets/fe9323a2-bc33-4b2b-8e00-565bbf30b203" />
+
 </p>
 
 ---
