@@ -18,9 +18,7 @@ An AI-powered, **map-first travel platform** that transforms destinations into i
 
 ### 🚀 Live Demo
 
-🌐 **Frontend:** Coming Soon
-
-📖 **API Docs:** Coming Soon
+https://voyager-3pd4.vercel.app/
 
 </div>
 
@@ -33,7 +31,7 @@ An AI-powered, **map-first travel platform** that transforms destinations into i
 ## Landing Page
 
 <p align="center">
-<img src="screenshots/landing.png" width="900"/>
+<img src="Screenshot 2026-07-29 010756.png.png" width="900"/>
 </p>
 
 ---
