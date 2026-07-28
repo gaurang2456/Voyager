@@ -16,17 +16,19 @@ An AI-powered, **map-first travel platform** that transforms destinations into i
 
 ---
 
-### 🚀 Live Demo
+### 🚀 Live
 
 https://voyager-3pd4.vercel.app/
 
+
 </div>
+
+
 
 ---
 
 # 📸 Preview
 
-> Replace these with screenshots after deployment.
 
 ## Landing Page
 
