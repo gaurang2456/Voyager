@@ -122,7 +122,7 @@ export const LandingPage: React.FC = () => {
             </button>
             <button
               onClick={handleStart}
-              className="px-6 py-2.5 rounded-full bg-[#C19A6B] hover:bg-[#A88254] active:scale-95 text-white font-bold text-xs shadow-xl shadow-amber-950/20 transition-all cursor-pointer flex items-center gap-2"
+              className="px-6 py-2.5 rounded-full bg-[#1B3022] hover:bg-[#2c4634] active:scale-95 text-white font-body-semibold text-xs shadow-lg transition-all cursor-pointer flex items-center gap-2"
             >
               <span>Get Started</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -132,8 +132,8 @@ export const LandingPage: React.FC = () => {
 
         {/* Hero Center Editorial Headline & Single CTA */}
         <main className="relative z-20 max-w-4xl w-full mx-auto px-6 text-center flex flex-col items-center my-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2F2A24]/60 backdrop-blur-md border border-[#E8E2D5]/20 text-xs font-medium text-[#E8E2D5] mb-8 animate-fadeIn">
-            <Compass className="w-3.5 h-3.5 text-[#5FAF8D]" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#242924]/60 backdrop-blur-md border border-[#8FA88E]/20 text-xs font-medium text-[#FAF8F3] mb-8 animate-fadeIn">
+            <Compass className="w-3.5 h-3.5 text-[#8FA88E]" />
             <span>Curated Journeys for Extraordinary Explorers</span>
           </div>
 
@@ -149,7 +149,7 @@ export const LandingPage: React.FC = () => {
           <div className="flex items-center justify-center">
             <button
               onClick={handleStart}
-              className="px-8 py-4 rounded-full bg-[#C19A6B] hover:bg-[#A88254] active:scale-95 text-white font-bold text-sm shadow-2xl shadow-amber-950/40 transition-all cursor-pointer flex items-center gap-3 group"
+              className="px-8 py-4 rounded-full bg-[#1B3022] hover:bg-[#2c4634] active:scale-95 text-white font-body-semibold text-sm shadow-xl transition-all cursor-pointer flex items-center gap-3 group"
             >
               <span>Begin Your Journey</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

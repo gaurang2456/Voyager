@@ -98,9 +98,9 @@ export const AICommandBar: React.FC = () => {
       )}
 
       {/* Main Luxury Concierge Command Bar */}
-      <div className="w-full bg-[#FAF8F3] text-[#2F2A24] backdrop-blur-2xl border border-[#EFE8DD] shadow-xl shadow-amber-950/8 rounded-full px-4 py-2 flex items-center gap-2.5 transition-all hover:shadow-2xl">
-        <Sparkles className="w-4 h-4 text-[#8E2A59] fill-[#8E2A59] shrink-0" />
-        
+      <div className="w-full bg-[#fdf9f3]/90 text-[#242924] backdrop-blur-[20px] border border-[#8FA88E]/30 shadow-[0_12px_40px_rgba(27,48,34,0.12)] rounded-full px-4 py-2.5 flex items-center gap-2.5 transition-all hover:shadow-[0_16px_48px_rgba(27,48,34,0.18)]">
+        <Sparkles className="w-4 h-4 text-[#8FA88E] fill-[#8FA88E] shrink-0" />
+
         <div className="relative flex-1 flex items-center">
           {!input && (
             <span
@@ -129,7 +129,7 @@ export const AICommandBar: React.FC = () => {
           onClick={() => handleSend(input || currentSuggestion.text)}
           disabled={isProcessing || regenerateMutation.isPending}
           aria-label="Send Concierge Command"
-          className="flex items-center justify-center w-7 h-7 rounded-full bg-[#C19A6B] hover:bg-[#A88254] text-white shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
+          className="flex items-center justify-center w-8 h-8 rounded-full bg-[#1B3022] hover:bg-[#2c4634] text-white shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
         >
           {isProcessing || regenerateMutation.isPending ? (
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />

@@ -160,7 +160,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 py-3 rounded-xl bg-[#C19A6B] hover:bg-[#A88254] active:scale-98 text-white font-bold text-xs shadow-lg shadow-amber-950/20 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full mt-2 py-3 rounded-full bg-[#1B3022] hover:bg-[#2c4634] active:scale-98 text-white font-body-semibold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

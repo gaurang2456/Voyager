@@ -1,128 +1,282 @@
-import React, { useState } from 'react';
-import { Luggage, User, Sparkles, ChevronDown, Sun, Moon } from 'lucide-react';
-import { useTravelStore } from '../../store/useTravelStore';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useThemeStore } from '../../store/useThemeStore';
-import { useMyTripsQuery } from '../../hooks/useTrips';
+import { useDestinationSearchQuery } from '../../hooks/useDestinationExploration';
 
 interface TopNavbarProps {
-  onOpenTrips: () => void;
-  onOpenExplore?: () => void;
+  onOpenCreateTrip: () => void;
   onOpenProfile: () => void;
+  onSelectDestination: (destinationName: string) => void;
 }
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
-  onOpenTrips,
+  onOpenCreateTrip,
   onOpenProfile,
+  onSelectDestination,
 }) => {
-  const {
-    activeTripId,
-    setActiveTrip,
-  } = useTravelStore();
+  const { user } = useAuthStore();
 
-  const { user, token } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
-  const { data: myTrips = [] } = useMyTripsQuery(Boolean(token));
-  const activeTrip = myTrips.find((t) => String(t.id) === String(activeTripId)) || myTrips[0];
+  const { data: searchResults, isLoading } = useDestinationSearchQuery(query, isFocused);
 
-  const userInitials = user?.name
-    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : null;
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (destinationName: string) => {
+    setIsFocused(false);
+    setQuery('');
+    onSelectDestination(destinationName);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (query.trim()) {
+        handleSelect(query.trim());
+      }
+    }
+  };
+
+  const trendingDestinations = ['Paris', 'Kyoto', 'Amalfi Coast', 'Zurich', 'Tokyo', 'Rome', 'Santorini', 'Bali'];
+
+  const hasResults =
+    searchResults &&
+    (searchResults.destinations.length > 0 ||
+      searchResults.hotels.length > 0 ||
+      searchResults.experiences.length > 0);
 
   return (
-    <header className="absolute top-3 left-4 right-4 md:left-5 md:right-5 z-40 flex items-center justify-between pointer-events-none gap-2">
-      
-      {/* Left: Minimal Brand & Destination Selector (Pointer Events Enabled) */}
-      <div className="flex items-center gap-2 shrink-0 pointer-events-auto">
-        <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#4A443D] text-[#FAF8F3] font-serif-luxury font-bold text-xs shadow-md tracking-wider border border-[#5C5346]">
-          <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-          <span>Voyager</span>
+    <header className="fixed top-0 left-72 right-0 h-20 bg-[#fdf9f3]/90 backdrop-blur-[20px] z-40 flex items-center justify-between px-8 shadow-[0_4px_20px_rgba(27,48,34,0.06)] border-b border-[#8FA88E]/20">
+      {/* Destination Discovery Autocomplete Search Bar */}
+      <div className="flex-1 max-w-xl relative" ref={searchRef}>
+        <div className="relative flex items-center">
+          <span className="material-symbols-outlined absolute left-4 text-[#8FA88E] text-[20px]">
+            explore
+          </span>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onKeyDown={handleKeyDown}
+            placeholder="Discover destinations, luxury stays, or experiences..."
+            className="w-full bg-[#F1EDE7] border border-transparent rounded-full py-2.5 pl-12 pr-10 text-sm font-body-base text-[#242924] placeholder-[#737973] focus:outline-none focus:ring-2 focus:ring-[#8FA88E]/30 focus:border-[#8FA88E] transition-all shadow-xs"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-3 text-[#737973] hover:text-[#242924] p-1 rounded-full cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          )}
         </div>
 
-        {activeTrip && (
-          <div className="relative">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] text-[#2F2A24] text-xs font-bold shadow-md shadow-amber-950/10 hover:bg-[#F3EFE8] transition-all cursor-pointer ring-2 ring-[#C19A6B]/20"
-            >
-              <span className="truncate max-w-[140px] text-[#2F2A24]">{activeTrip.destination}</span>
-              {activeTrip.startDate && (
-                <span className="text-[10px] text-slate-400 font-normal hidden lg:inline">
-                  {activeTrip.startDate.substring(0, 7)}
-                </span>
-              )}
-              <ChevronDown className={`w-3.5 h-3.5 text-[#C19A6B] transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* Destination Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-56 bg-[#FAF8F3] border border-[#E8E2D5] rounded-2xl shadow-2xl p-1.5 z-50 text-[#2F2A24] animate-fadeIn backdrop-blur-2xl pointer-events-auto">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#A59E93] px-2.5 py-1 border-b border-[#E8E2D5]/60 mb-1">
-                  Switch Destination
+        {/* Polished Autocomplete Dropdown Panel */}
+        {isFocused && (
+          <div className="absolute top-full left-0 right-0 mt-3 bg-[#fdf9f3]/95 backdrop-blur-[20px] rounded-3xl shadow-[0_16px_48px_rgba(27,48,34,0.15)] border border-[#8FA88E]/30 overflow-hidden z-50 p-4 max-h-[75vh] overflow-y-auto custom-scrollbar animate-fadeIn">
+            {/* 1. Empty Input state: Show Trending Destinations */}
+            {!query.trim() && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-[#F1EDE7] pb-2">
+                  <span className="font-label-caps text-[10px] text-[#8FA88E] uppercase tracking-widest">
+                    Trending World Destinations
+                  </span>
+                  <span className="text-[10px] font-body-semibold text-[#737973]">Discovery Hub</span>
                 </div>
-                <div className="max-h-60 overflow-y-auto custom-scrollbar">
-                  {myTrips.map((t) => (
+                <div className="flex flex-wrap gap-2">
+                  {trendingDestinations.map((dest) => (
                     <button
-                      key={t.id}
-                      onClick={() => {
-                        setActiveTrip(String(t.id));
-                        setIsDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                        String(t.id) === String(activeTripId)
-                          ? 'bg-[#C19A6B]/20 text-[#8E2A59] font-bold'
-                          : 'hover:bg-[#F3EFE8] text-[#6E665C]'
-                      }`}
+                      key={dest}
+                      onClick={() => handleSelect(dest)}
+                      className="px-3.5 py-1.5 rounded-full bg-[#F1EDE7] hover:bg-[#cfeacd] text-[#242924] hover:text-[#1B3022] text-xs font-body-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
                     >
-                      <span className="truncate">{t.destination}</span>
-                      {t.startDate && <span className="text-[10px] text-slate-400">{t.startDate}</span>}
+                      <span className="material-symbols-outlined text-[14px] text-[#8FA88E]">location_on</span>
+                      {dest}
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* 2. Loading State */}
+            {query.trim() && isLoading && (
+              <div className="py-8 text-center text-[#737973] flex flex-col items-center gap-2">
+                <span className="material-symbols-outlined animate-spin text-[24px] text-[#1B3022]">
+                  progress_activity
+                </span>
+                <span className="text-xs font-body-semibold">Searching world travel database...</span>
+              </div>
+            )}
+
+            {/* 3. Grouped Search Results */}
+            {query.trim() && !isLoading && (
+              <div className="space-y-5">
+                {!hasResults && (
+                  <div className="py-6 text-center text-[#737973]">
+                    <p className="text-xs font-body-semibold">No direct matches found for "{query}"</p>
+                    <button
+                      onClick={() => handleSelect(query)}
+                      className="mt-3 bg-[#1B3022] text-white px-5 py-2 rounded-full text-xs font-body-semibold hover:bg-[#2c4634] transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Explore "{query}" Info Page</span>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Destinations Group */}
+                {searchResults && searchResults.destinations.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs font-label-caps text-[#1B3022] mb-2 uppercase tracking-wider">
+                      <span className="material-symbols-outlined text-[16px]">location_on</span>
+                      Destinations ({searchResults.destinations.length})
+                    </div>
+                    <div className="space-y-1">
+                      {searchResults.destinations.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => handleSelect(item.destinationName)}
+                          className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#F1EDE7] transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.title}
+                              className="w-10 h-10 rounded-xl object-cover shadow-2xs group-hover:scale-105 transition-transform"
+                            />
+                            <div>
+                              <div className="font-body-semibold text-sm text-[#242924] group-hover:text-[#1B3022]">
+                                {item.title}
+                              </div>
+                              <div className="text-xs text-[#737973]">{item.subtitle}</div>
+                            </div>
+                          </div>
+                          <span className="material-symbols-outlined text-[18px] text-[#737973] group-hover:text-[#1B3022] group-hover:translate-x-1 transition-all">
+                            chevron_right
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hotels Group */}
+                {searchResults && searchResults.hotels.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs font-label-caps text-[#1B3022] mb-2 uppercase tracking-wider">
+                      <span className="material-symbols-outlined text-[16px]">hotel</span>
+                      Luxury Stays ({searchResults.hotels.length})
+                    </div>
+                    <div className="space-y-1">
+                      {searchResults.hotels.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => handleSelect(item.destinationName)}
+                          className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#F1EDE7] transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.title}
+                              className="w-10 h-10 rounded-xl object-cover shadow-2xs group-hover:scale-105 transition-transform"
+                            />
+                            <div>
+                              <div className="font-body-semibold text-sm text-[#242924] group-hover:text-[#1B3022]">
+                                {item.title}
+                              </div>
+                              <div className="text-xs text-[#737973]">{item.subtitle}</div>
+                            </div>
+                          </div>
+                          <span className="text-xs font-body-semibold bg-[#cfeacd] text-[#1B3022] px-2.5 py-0.5 rounded-full">
+                            {item.priceRange || '$$$$'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Experiences Group */}
+                {searchResults && searchResults.experiences.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs font-label-caps text-[#1B3022] mb-2 uppercase tracking-wider">
+                      <span className="material-symbols-outlined text-[16px]">attractions</span>
+                      Experiences & Sights ({searchResults.experiences.length})
+                    </div>
+                    <div className="space-y-1">
+                      {searchResults.experiences.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => handleSelect(item.destinationName)}
+                          className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#F1EDE7] transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.title}
+                              className="w-10 h-10 rounded-xl object-cover shadow-2xs group-hover:scale-105 transition-transform"
+                            />
+                            <div>
+                              <div className="font-body-semibold text-sm text-[#242924] group-hover:text-[#1B3022]">
+                                {item.title}
+                              </div>
+                              <div className="text-xs text-[#737973]">{item.subtitle}</div>
+                            </div>
+                          </div>
+                          <span className="material-symbols-outlined text-[18px] text-[#737973] group-hover:text-[#1B3022] group-hover:translate-x-1 transition-all">
+                            arrow_forward
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Right: Minimal Navigation & Theme Toggle (Pointer Events Enabled) */}
-      <nav className="flex items-center gap-1 p-0.5 rounded-full bg-[#FAF8F3] backdrop-blur-2xl border border-[#E8E2D5] shadow-md shadow-amber-950/5 shrink-0 pointer-events-auto">
-        <button
-          onClick={onOpenTrips}
-          aria-label="View Trips"
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-        >
-          <Luggage className="w-3.5 h-3.5 text-[#C19A6B]" />
-          <span className="hidden sm:inline">Trips</span>
+      {/* Right Header Controls */}
+      <div className="flex items-center gap-6 ml-4">
+        {/* Notification Bell */}
+        <button className="flex items-center justify-center p-2.5 rounded-full text-[#737973] hover:bg-[#F1EDE7] transition-colors relative cursor-pointer">
+          <span className="material-symbols-outlined text-[22px]">notifications</span>
+          <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#1B3022]"></span>
         </button>
 
-        {/* Theme Toggle Button */}
-        <button
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          className="p-1 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-        >
-          {theme === 'dark' ? (
-            <Sun className="w-3.5 h-3.5 text-amber-400" />
-          ) : (
-            <Moon className="w-3.5 h-3.5 text-slate-600" />
-          )}
-        </button>
+        <div className="h-6 w-[1px] bg-[#8FA88E]/20"></div>
 
-        {/* User Profile Button */}
+        {/* User Profile Trigger */}
         <button
           onClick={onOpenProfile}
-          aria-label="User Profile"
-          title={user?.name || user?.email || 'User Profile'}
-          className="flex items-center justify-center w-6 h-6 rounded-full bg-[#4A443D] text-white font-bold text-[10px] shadow-sm hover:opacity-90 transition-all cursor-pointer shrink-0"
+          className="flex items-center gap-2 p-1 rounded-full hover:bg-[#F1EDE7] transition-colors cursor-pointer"
         >
-          {userInitials || <User className="w-3 h-3 text-[#FAF8F3]" />}
+          <div className="w-9 h-9 rounded-full bg-[#1B3022] text-white flex items-center justify-center font-body-semibold text-xs shadow-xs">
+            {user?.name ? user.name.substring(0, 2).toUpperCase() : 'ER'}
+          </div>
         </button>
-      </nav>
 
+        {/* Primary CTA */}
+        <button
+          onClick={onOpenCreateTrip}
+          className="bg-[#1B3022] text-white px-6 py-2.5 rounded-full font-body-semibold text-sm shadow-md hover:bg-[#2c4634] hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          Plan a Trip
+        </button>
+      </div>
     </header>
   );
 };
