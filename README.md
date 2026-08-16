@@ -50,6 +50,16 @@ https://voyager-3pd4.vercel.app/
 
 ---
 
+## Dashboard
+
+<p align="center">
+
+</p>
+<img width="1919" height="1097" alt="Screenshot 2026-08-16 131239" src="https://github.com/user-attachments/assets/3f54c06a-5245-4e2c-9189-bd3731879e7c" />
+
+
+---
+
 # ✨ What is Voyager?
 
 Planning a trip today is frustrating.
