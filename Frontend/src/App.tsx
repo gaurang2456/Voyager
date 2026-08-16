@@ -200,7 +200,7 @@ export function App() {
       <CreateTripModal
         isOpen={isCreateTripModalOpen}
         onClose={() => setIsCreateTripModalOpen(false)}
-        onTripCreated={(id) => handleSelectTrip(String(id))}
+        onTripCreated={(id: number) => handleSelectTrip(String(id))}
         initialDestination={presetDestination}
       />
 

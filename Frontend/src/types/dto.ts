@@ -22,6 +22,8 @@ export interface TripResponse {
   endDate?: string;
   budget?: number;
   description?: string;
+  imageUrl?: string;
+  travelStyle?: string;
 }
 
 export interface CreateTripRequest {
@@ -32,6 +34,8 @@ export interface CreateTripRequest {
   endDate: string;
   budget: number;
   description?: string;
+  imageUrl?: string;
+  travelStyle?: string;
 }
 
 export interface UpdateTripRequest {
@@ -42,6 +46,8 @@ export interface UpdateTripRequest {
   endDate?: string;
   budget?: number;
   description?: string;
+  imageUrl?: string;
+  travelStyle?: string;
 }
 
 export interface ActivityResponse {

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useDestinationSearchQuery } from '../../hooks/useDestinationExploration';
+import type { DestinationSuggestion } from '../../api/explore';
 
 interface TopNavbarProps {
   onOpenCreateTrip: () => void;
@@ -143,7 +144,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                       Destinations ({searchResults.destinations.length})
                     </div>
                     <div className="space-y-1">
-                      {searchResults.destinations.map((item) => (
+                      {searchResults.destinations.map((item: DestinationSuggestion) => (
                         <div
                           key={item.id}
                           onClick={() => handleSelect(item.destinationName)}
@@ -179,7 +180,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                       Luxury Stays ({searchResults.hotels.length})
                     </div>
                     <div className="space-y-1">
-                      {searchResults.hotels.map((item) => (
+                      {searchResults.hotels.map((item: DestinationSuggestion) => (
                         <div
                           key={item.id}
                           onClick={() => handleSelect(item.destinationName)}
@@ -215,7 +216,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                       Experiences & Sights ({searchResults.experiences.length})
                     </div>
                     <div className="space-y-1">
-                      {searchResults.experiences.map((item) => (
+                      {searchResults.experiences.map((item: DestinationSuggestion) => (
                         <div
                           key={item.id}
                           onClick={() => handleSelect(item.destinationName)}

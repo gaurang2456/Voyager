@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTripPhotosQuery, useDeletePhotoMutation } from '../../hooks/useTripPhotos';
 import { UploadPhotoModal } from '../modals/UploadPhotoModal';
 import type { MemoryAlbum, MemoryPhoto } from '../../types/memories';
+import type { TripPhotoDto } from '../../api/photos';
 
 interface AlbumDetailViewProps {
   album: MemoryAlbum;
@@ -17,7 +18,7 @@ export const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack 
   const deleteMutation = useDeletePhotoMutation();
 
   // Convert DB photos to MemoryPhoto structure
-  const realPhotos: MemoryPhoto[] = userPhotos.map((p) => ({
+  const realPhotos: MemoryPhoto[] = userPhotos.map((p: TripPhotoDto) => ({
     id: String(p.id),
     url: p.url,
     title: p.title || `${album.destination} Memory`,

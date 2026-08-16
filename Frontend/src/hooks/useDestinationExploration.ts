@@ -3,18 +3,18 @@ import { searchDestinationsApi, fetchDestinationDetailApi } from '../api/explore
 
 export function useDestinationSearchQuery(query: string, enabled = true) {
   return useQuery({
-    queryKey: ['destination-search', query],
+    queryKey: ['destinationSearch', query],
     queryFn: () => searchDestinationsApi(query),
-    enabled,
+    enabled: enabled && Boolean(query.trim()),
     staleTime: 1000 * 60 * 5,
   });
 }
 
-export function useDestinationDetailQuery(destinationName: string | null, enabled = true) {
+export function useDestinationDetailQuery(name: string) {
   return useQuery({
-    queryKey: ['destination-detail', destinationName],
-    queryFn: () => fetchDestinationDetailApi(destinationName!),
-    enabled: enabled && Boolean(destinationName),
+    queryKey: ['destinationDetail', name],
+    queryFn: () => fetchDestinationDetailApi(name),
+    enabled: Boolean(name),
     staleTime: 1000 * 60 * 10,
   });
 }

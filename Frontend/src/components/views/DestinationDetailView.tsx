@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDestinationDetailQuery } from '../../hooks/useDestinationExploration';
+import type { RealPlace, DestinationSuggestion } from '../../api/explore';
 
 interface DestinationDetailViewProps {
   destinationName: string;
@@ -149,7 +150,7 @@ export const DestinationDetailView: React.FC<DestinationDetailViewProps> = ({
 
         {detail.places && detail.places.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {detail.places.slice(0, 9).map((place) => (
+            {detail.places.slice(0, 9).map((place: RealPlace) => (
               <article
                 key={place.placeId}
                 className="bg-[#ffffff] rounded-2xl p-5 shadow-[0_10px_30px_rgba(27,48,34,0.06)] flex flex-col justify-between space-y-4 hover:-translate-y-1 transition-transform"
@@ -207,7 +208,7 @@ export const DestinationDetailView: React.FC<DestinationDetailViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {detail.hotels.map((hotel) => (
+            {detail.hotels.map((hotel: DestinationSuggestion) => (
               <article
                 key={hotel.id}
                 className="bg-[#ffffff] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(27,48,34,0.06)] flex flex-col justify-between hover:-translate-y-1 transition-transform"
@@ -253,7 +254,7 @@ export const DestinationDetailView: React.FC<DestinationDetailViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {detail.experiences.map((exp) => (
+            {detail.experiences.map((exp: DestinationSuggestion) => (
               <article
                 key={exp.id}
                 className="bg-[#ffffff] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(27,48,34,0.06)] flex flex-col justify-between hover:-translate-y-1 transition-transform"

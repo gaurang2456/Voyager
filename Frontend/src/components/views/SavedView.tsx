@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTravelStore } from '../../store/useTravelStore';
+import type { SavedItem } from '../../store/useTravelStore';
 
 interface SavedViewProps {
   onOpenCreateTrip: (destination: string) => void;
@@ -43,7 +44,7 @@ export const SavedView: React.FC<SavedViewProps> = ({ onOpenCreateTrip }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {savedItems.map((item) => (
+          {savedItems.map((item: SavedItem) => (
             <article
               key={item.id}
               className="bg-[#ffffff] rounded-2xl overflow-hidden shadow-[0_12px_36px_rgba(27,48,34,0.08)] group hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(27,48,34,0.12)] transition-all duration-300 relative flex flex-col justify-between"

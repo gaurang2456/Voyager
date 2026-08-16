@@ -1,5 +1,16 @@
 import { create } from 'zustand';
 import type { ActivityCategory } from '../types/travel';
+import type { TripResponse } from '../types/dto';
+
+export interface SavedItem {
+  id: string;
+  title: string;
+  location: string;
+  imageUrl?: string;
+  category?: string;
+  travelStyle?: string;
+  note?: string;
+}
 
 export interface TravelUIState {
   activeTripId: string | null;
@@ -11,6 +22,8 @@ export interface TravelUIState {
   searchQuery: string;
   completedActivityIds: Record<string, boolean>;
   skippedActivityIds: Record<string, boolean>;
+  selectedDestinationName: string | null;
+  savedItems: SavedItem[];
 
   setActiveTrip: (tripId: string | null) => void;
   setActiveDay: (dayNumber: number) => void;
@@ -21,9 +34,13 @@ export interface TravelUIState {
   setSearchQuery: (query: string) => void;
   toggleActivityCompleted: (activityId: string) => void;
   toggleActivitySkipped: (activityId: string) => void;
+  setSelectedDestination: (name: string | null) => void;
+  toggleSaveTrip: (trip: TripResponse) => void;
+  isTripSaved: (tripId: number | string) => boolean;
+  removeSavedItem: (id: string) => void;
 }
 
-export const useTravelStore = create<TravelUIState>((set) => ({
+export const useTravelStore = create<TravelUIState>((set, get) => ({
   activeTripId: null,
   activeDayNumber: 1,
   selectedActivityId: null,
@@ -33,6 +50,8 @@ export const useTravelStore = create<TravelUIState>((set) => ({
   searchQuery: '',
   completedActivityIds: {},
   skippedActivityIds: {},
+  selectedDestinationName: null,
+  savedItems: [],
 
   setActiveTrip: (tripId: string | null) =>
     set({ activeTripId: tripId, activeDayNumber: 1, selectedActivityId: null, isPanelOpen: false }),
@@ -62,5 +81,30 @@ export const useTravelStore = create<TravelUIState>((set) => ({
         ...state.skippedActivityIds,
         [activityId]: !state.skippedActivityIds[activityId],
       },
+    })),
+  setSelectedDestination: (name: string | null) => set({ selectedDestinationName: name }),
+  toggleSaveTrip: (trip: TripResponse) =>
+    set((state) => {
+      const exists = state.savedItems.some((item) => item.id === String(trip.id));
+      if (exists) {
+        return {
+          savedItems: state.savedItems.filter((item) => item.id !== String(trip.id)),
+        };
+      }
+      const newItem: SavedItem = {
+        id: String(trip.id),
+        title: trip.destination,
+        location: trip.destination,
+        imageUrl: trip.imageUrl,
+        travelStyle: trip.travelStyle,
+      };
+      return { savedItems: [...state.savedItems, newItem] };
+    }),
+  isTripSaved: (tripId: number | string) => {
+    return get().savedItems.some((item) => item.id === String(tripId));
+  },
+  removeSavedItem: (id: string) =>
+    set((state) => ({
+      savedItems: state.savedItems.filter((item) => item.id !== id),
     })),
 }));

@@ -4,10 +4,10 @@ import type { UploadPhotoRequest } from '../api/photos';
 
 export function useTripPhotosQuery(tripId: number | string | null, enabled = true) {
   return useQuery({
-    queryKey: ['trip-photos', tripId ? Number(tripId) : null],
+    queryKey: ['tripPhotos', tripId],
     queryFn: () => fetchTripPhotosApi(tripId!),
     enabled: enabled && Boolean(tripId),
-    staleTime: 1000 * 60 * 2, // 2 minutes cache
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -18,9 +18,7 @@ export function useUploadPhotoMutation() {
     mutationFn: ({ tripId, payload }: { tripId: number | string; payload: UploadPhotoRequest }) =>
       uploadTripPhotoApi(tripId, payload),
     onSuccess: (_, variables) => {
-      const numId = Number(variables.tripId);
-      queryClient.invalidateQueries({ queryKey: ['trip-photos', numId] });
-      queryClient.invalidateQueries({ queryKey: ['trips'] });
+      queryClient.invalidateQueries({ queryKey: ['tripPhotos', variables.tripId] });
     },
   });
 }
@@ -32,9 +30,7 @@ export function useDeletePhotoMutation() {
     mutationFn: ({ tripId, photoId }: { tripId: number | string; photoId: number | string }) =>
       deleteTripPhotoApi(tripId, photoId),
     onSuccess: (_, variables) => {
-      const numId = Number(variables.tripId);
-      queryClient.invalidateQueries({ queryKey: ['trip-photos', numId] });
-      queryClient.invalidateQueries({ queryKey: ['trips'] });
+      queryClient.invalidateQueries({ queryKey: ['tripPhotos', variables.tripId] });
     },
   });
 }
