@@ -43,7 +43,8 @@ https://voyager-3pd4.vercel.app/
 ## Interactive Map
 
 <p align="center">
-<img width="1917" height="1097" alt="Screenshot 2026-07-29 010756" src="https://github.com/user-attachments/assets/fe9323a2-bc33-4b2b-8e00-565bbf30b203" />
+<img width="1919" height="1098" alt="Screenshot 2026-08-16 131228" src="https://github.com/user-attachments/assets/6fb0e90b-64c3-4fd0-955a-fbc7b97da2a5" />
+
 </p>
 
 
