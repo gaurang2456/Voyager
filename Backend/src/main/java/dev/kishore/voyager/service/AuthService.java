@@ -18,6 +18,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final EmailNotificationService emailNotificationService;
 
     public String register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -32,6 +33,8 @@ public class AuthService {
         );
 
         userRepository.save(user);
+
+        emailNotificationService.sendWelcomeEmail(user.getEmail(), user.getName());
 
         return "User registered successfully";
     }

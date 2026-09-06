@@ -31,6 +31,7 @@ public class ItineraryService {
     private final AIItineraryService aiItineraryService;
     private final WeatherService weatherService;
     private final ItineraryMapper itineraryMapper;
+    private final EmailNotificationService emailNotificationService;
 
     private User getCurrentUser() {
         String email = SecurityContextHolder
@@ -50,6 +51,7 @@ public class ItineraryService {
 
     @Transactional
     public ItineraryResponse generateItinerary(Long tripId) {
+        User user = getCurrentUser();
         Trip trip = getOwnedTrip(tripId);
 
         List<WeatherForecastDto> weatherForecasts = weatherService.getWeatherForecast(
@@ -64,6 +66,9 @@ public class ItineraryService {
         itinerary.setVersion(1);
 
         Itinerary savedItinerary = itineraryRepository.save(itinerary);
+
+        emailNotificationService.sendItineraryEmail(user.getEmail(), user.getName(), trip, savedItinerary);
+
         ItineraryResponse response = itineraryMapper.toResponse(savedItinerary);
         response.setModificationSummary(generatedDto.getModificationSummary());
         return response;
@@ -167,6 +172,9 @@ public class ItineraryService {
         itinerary.setVersion(nextVersion);
 
         Itinerary savedItinerary = itineraryRepository.save(itinerary);
+
+        emailNotificationService.sendItineraryEmail(user.getEmail(), user.getName(), trip, savedItinerary);
+
         ItineraryResponse response = itineraryMapper.toResponse(savedItinerary);
         response.setModificationSummary(generatedDto.getModificationSummary());
         return response;
