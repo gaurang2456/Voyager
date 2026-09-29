@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { useMyTripsQuery } from '../../hooks/useTrips';
 import { useTravelStore } from '../../store/useTravelStore';
+import { getMapTileUrl, getMapTileOptions } from '../../utils/mapTiles';
 
 interface DashboardViewProps {
   onSelectTrip: (tripId: string) => void;
@@ -33,10 +34,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19,
-      }).addTo(map);
+      L.tileLayer(getMapTileUrl('light', 'light_all'), getMapTileOptions()).addTo(map);
 
       // Pins data
       const pinLocations = [

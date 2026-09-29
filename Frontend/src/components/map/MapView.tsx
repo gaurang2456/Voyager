@@ -8,6 +8,7 @@ import { useMyTripsQuery } from '../../hooks/useTrips';
 import { useItineraryQuery } from '../../hooks/useItinerary';
 import { transformItineraryResponseToDays } from '../../api/itinerary';
 import { fetchRealRoute } from '../../services/routeService';
+import { getMapTileUrl, getMapTileOptions } from '../../utils/mapTiles';
 import type { ActivityCategory, Activity } from '../../types/travel';
 
 const getCategoryColor = (category: ActivityCategory) => {
@@ -216,14 +217,9 @@ export const MapView: React.FC = () => {
       attributionControl: false,
     });
 
-    const initialTileUrl = theme === 'dark'
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    const initialTileUrl = getMapTileUrl(theme, 'voyager');
 
-    const tileLayer = L.tileLayer(initialTileUrl, {
-      maxZoom: 19,
-      subdomains: 'abcd',
-    }).addTo(map);
+    const tileLayer = L.tileLayer(initialTileUrl, getMapTileOptions()).addTo(map);
 
     tileLayerRef.current = tileLayer;
 
@@ -248,9 +244,7 @@ export const MapView: React.FC = () => {
   // Handle Dynamic Theme Switching for Map Tiles
   useEffect(() => {
     if (!mapRef.current || !tileLayerRef.current) return;
-    const newTileUrl = theme === 'dark'
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    const newTileUrl = getMapTileUrl(theme, 'voyager');
     tileLayerRef.current.setUrl(newTileUrl);
   }, [theme]);
 
